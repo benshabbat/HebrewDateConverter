@@ -61,7 +61,16 @@ const HebrewDateConverter = () => {
   }, [gregorianDate, convertDate]);
 
   const handleDateChange = (e) => {
-    setGregorianDate(e.target.value);
+    const inputDate = e.target.value;
+    
+    // Ensure the year is limited to 4 digits
+    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+    if (inputDate && !datePattern.test(inputDate)) {
+      setError('השנה חייבת להיות בת 4 ספרות');
+      return;
+    }
+    
+    setGregorianDate(inputDate);
   };
 
   return (
