@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import Header from './Header';
+// src/components/HebrewDateConverter/index.jsx
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import DateInput from './DateInput';
 import HebrewDateDisplay from './HebrewDateDisplay';
 import { 
@@ -10,119 +10,169 @@ import {
 } from './hebrewDateUtils';
 
 /**
- * Main Hebrew Date Converter component
- * Manages the state and logic for converting Gregorian dates to Hebrew dates
+ * קומפוננטת ממיר תאריכים עברי משופרת ביצועים - עם איקונים מוטמעים ישירות
  */
 const HebrewDateConverter = () => {
-  // State hooks
+  // ניהול מצב
   const [gregorianDate, setGregorianDate] = useState('');
   const [hebrewDate, setHebrewDate] = useState('');
   const [dayOfWeek, setDayOfWeek] = useState('');
   const [dateNote, setDateNote] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [animateHeader, setAnimateHeader] = useState(false);
+  
+  // שמירת מזהה הטיימר לאפקט טעינה
+  const loadingTimerRef = React.useRef(null);
+  const headerAnimationTimerRef = React.useRef(null);
 
-  // Initialize with today's date
+  // אתחול בתאריך הנוכחי
   useEffect(() => {
     const today = new Date();
     setGregorianDate(formatDate(today));
+    
+    // אנימציה קצרה לכותרת
+    setAnimateHeader(true);
+    
+    headerAnimationTimerRef.current = setTimeout(() => {
+      setAnimateHeader(false);
+      headerAnimationTimerRef.current = null;
+    }, 1000);
+    
+    // ניקוי בעת סיום
+    return () => {
+      if (headerAnimationTimerRef.current) {
+        clearTimeout(headerAnimationTimerRef.current);
+        headerAnimationTimerRef.current = null;
+      }
+      
+      if (loadingTimerRef.current) {
+        clearTimeout(loadingTimerRef.current);
+        loadingTimerRef.current = null;
+      }
+    };
   }, []);
 
-  // Convert date whenever input changes
+  // המרת התאריך בכל פעם שהוא משתנה
   useEffect(() => {
     if (gregorianDate) {
-      handleConvertDate();
+      convertDate();
     }
   }, [gregorianDate]);
 
   /**
-   * Convert the current Gregorian date to Hebrew date
+   * המרת התאריך הלועזי לעברי
    */
-  const handleConvertDate = () => {
-    setError('');
+  const convertDate = useCallback(() => {
+    if (!gregorianDate) return;
+    
     setLoading(true);
     
-    // Simulate processing delay for better UX
-    setTimeout(() => {
+    // ניקוי טיימר קודם אם קיים
+    if (loadingTimerRef.current) {
+      clearTimeout(loadingTimerRef.current);
+    }
+    
+    // השהייה קצרה לאפקט טעינה
+    loadingTimerRef.current = setTimeout(() => {
       try {
         const date = new Date(gregorianDate);
         
         if (isNaN(date.getTime())) {
           setError('התאריך שהוזן אינו תקין');
           setLoading(false);
+          loadingTimerRef.current = null;
           return;
         }
 
-        // Get Hebrew date
+        // המרת התאריך
         const hebrewDateResult = convertToHebrewDate(date);
         setHebrewDate(hebrewDateResult);
         
-        // Get day of week
+        // קבלת היום בשבוע
         setDayOfWeek(getHebrewDayOfWeek(date));
         
-        // Get special date note
+        // בדיקה אם זהו מועד מיוחד
         const note = getDateNote(date);
         setDateNote(note);
         
+        setError('');
         setLoading(false);
+        loadingTimerRef.current = null;
       } catch (error) {
-        console.error('Error converting date:', error);
+        console.error('שגיאה בהמרת התאריך:', error);
         setError('אירעה שגיאה בהמרת התאריך');
         setLoading(false);
+        loadingTimerRef.current = null;
       }
     }, 300);
-  };
+  }, [gregorianDate]);
 
   /**
-   * Handle date change from DateInput component
-   * @param {string} newDate - New date in yyyy-MM-dd format
+   * טיפול בשינוי תאריך
    */
-  const handleDateChange = (newDate) => {
+  const handleDateChange = useCallback((e) => {
+    const newDate = e.target.value;
+    
     if (newDate) {
-      // Extract year from the date input
+      // בדיקת תקינות התאריך
       const [yearStr] = newDate.split('-');
+      const year = parseInt(yearStr);
       
-      // Validate year
-      if (yearStr.length !== 4 || !/^\d{4}$/.test(yearStr)) {
-        setError('השנה חייבת להיות בדיוק 4 ספרות');
-        return;
-      }
-      
-      const year = parseInt(yearStr, 10);
-      if (year < 1800 || year > 2300) {
+      if (isNaN(year) || year < 1800 || year > 2300) {
         setError('השנה חייבת להיות בטווח 1800-2300');
         return;
       }
     }
     
-    setError(''); // Clear any previous errors
+    setError('');
     setGregorianDate(newDate);
-  };
+  }, []);
+  
+  // הגדרת קלאסים לכותרת
+  const headerClasses = useMemo(() => `flex justify-between items-center mb-6 pb-4 border-b border-indigo-200 transition-all ${
+    animateHeader ? 'transform -translate-y-1' : ''
+  }`, [animateHeader]);
+
+  // גרסת השנה הנוכחית
+  const currentYear = useMemo(() => new Date().getFullYear(), []);
 
   return (
     <div className="max-w-lg mx-auto p-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl shadow-xl text-right" dir="rtl">
-      {/* Header */}
-      <Header />
+      {/* כותרת */}
+      <div className={headerClasses}>
+        <h1 className="text-3xl font-bold text-indigo-800 flex items-center">
+          {/* איקון לוח שנה מוטמע ישירות */}
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 ml-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span>ממיר תאריכים עברי</span>
+        </h1>
+        
+        <div className="text-xs text-indigo-400 bg-white bg-opacity-50 rounded-full px-3 py-1">
+          גרסה 2.0
+        </div>
+      </div>
       
-      {/* Date Input Section */}
+      {/* קלט תאריך */}
       <DateInput 
         value={gregorianDate} 
         onChange={handleDateChange} 
         error={error}
       />
       
-      {/* Hebrew Date Display */}
+      {/* תצוגת התאריך העברי */}
       <HebrewDateDisplay 
         hebrewDate={hebrewDate}
         dayOfWeek={dayOfWeek}
-        dateNote={dateNote}
+        note={dateNote}
         loading={loading}
         gregorianDate={gregorianDate}
       />
       
-      {/* Footer */}
+      {/* כותרת תחתונה */}
       <div className="mt-6 text-center text-indigo-400 text-xs">
-        <p>ממיר תאריכים משופר • גרסה 2.0</p>
+        <p>פותח ע"י דוד-חן בן שבת• {currentYear}</p>
       </div>
     </div>
   );
