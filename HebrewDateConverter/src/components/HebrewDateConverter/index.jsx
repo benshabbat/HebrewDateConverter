@@ -66,18 +66,18 @@ const HebrewDateConverter = () => {
     
     if (inputDate) {
       // Extract year from the date input
-      const yearPart = inputDate.split('-')[0];
+      const [yearStr, monthStr, dayStr] = inputDate.split('-');
       
       // Check if year is exactly 4 digits
-      if (yearPart.length !== 4 || !/^\d{4}$/.test(yearPart)) {
+      if (yearStr.length !== 4 || !/^\d{4}$/.test(yearStr)) {
         setError('השנה חייבת להיות בדיוק 4 ספרות');
         return;
       }
       
-      // Check if year is within reasonable range (100-9999)
-      const year = parseInt(yearPart, 10);
-      if (year < 100 || year > 9999) {
-        setError('השנה חייבת להיות בטווח 100-9999');
+      // Check if year is within reasonable range (1300-2500)
+      const year = parseInt(yearStr, 10);
+      if (year < 1300 || year > 2500) {
+        setError('השנה חייבת להיות בטווח 1300-2500');
         return;
       }
     }
