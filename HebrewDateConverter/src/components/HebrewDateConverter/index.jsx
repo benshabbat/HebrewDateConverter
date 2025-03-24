@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+// src/components/HebrewDateConverter/index.jsx
+import React, { useState, useEffect, useCallback } from 'react';
 import HebrewDateDisplay from './HebrewDateDisplay';
 import DateInput from './DateInput';
 import { convertToHebrewDate } from './hebrewDateUtils';
@@ -74,8 +75,8 @@ const HebrewDateConverter = () => {
   };
 
   return (
-    <div className="p-6 max-w-md mx-auto bg-white rounded-lg shadow-md text-right" dir="rtl">
-      <h1 className="text-2xl font-bold mb-6 text-blue-700">ממיר תאריכים לועזי-עברי</h1>
+    <div className="p-8 max-w-md mx-auto bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-lg text-right" dir="rtl">
+      <h1 className="text-3xl font-bold mb-6 text-indigo-700 border-b pb-3 border-indigo-200">ממיר תאריכים לועזי-עברי</h1>
       
       <DateInput 
         value={gregorianDate} 
@@ -84,9 +85,9 @@ const HebrewDateConverter = () => {
       />
       
       {loading ? (
-        <div className="text-center py-4">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
-          <p className="mt-2">מחשב תאריך עברי...</p>
+        <div className="text-center py-6 my-4">
+          <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-700"></div>
+          <p className="mt-3 text-indigo-700">מחשב תאריך עברי...</p>
         </div>
       ) : (
         hebrewDate && <HebrewDateDisplay hebrewDate={hebrewDate} />
