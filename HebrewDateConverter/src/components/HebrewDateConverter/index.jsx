@@ -90,7 +90,6 @@ const HebrewDateConverter = () => {
     <div className="p-8 max-w-md mx-auto bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-lg text-right" dir="rtl">
       <div className="flex justify-between items-center border-b pb-3 border-indigo-200 mb-6">
         <h1 className="text-3xl font-bold text-indigo-700">ממיר תאריכים לועזי-עברי</h1>
-        <span className="text-xs text-indigo-400">by David-Chen Benshabbat</span>
       </div>
       
       <DateInput 
