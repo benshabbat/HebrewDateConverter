@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+// src/components/HebrewDateConverter/index.jsx
+import React, { useState, useEffect, useCallback } from 'react';
 import HebrewDateDisplay from './HebrewDateDisplay';
 import DateInput from './DateInput';
 import { convertToHebrewDate } from './hebrewDateUtils';
@@ -63,13 +64,25 @@ const HebrewDateConverter = () => {
   const handleDateChange = (e) => {
     const inputDate = e.target.value;
     
-    // Ensure the year is limited to 4 digits
-    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-    if (inputDate && !datePattern.test(inputDate)) {
-      setError('השנה חייבת להיות בת 4 ספרות');
-      return;
+    if (inputDate) {
+      // Extract year from the date input
+      const yearPart = inputDate.split('-')[0];
+      
+      // Check if year is exactly 4 digits
+      if (yearPart.length !== 4 || !/^\d{4}$/.test(yearPart)) {
+        setError('השנה חייבת להיות בדיוק 4 ספרות');
+        return;
+      }
+      
+      // Check if year is within reasonable range (100-9999)
+      const year = parseInt(yearPart, 10);
+      if (year < 100 || year > 9999) {
+        setError('השנה חייבת להיות בטווח 100-9999');
+        return;
+      }
     }
     
+    setError(''); // Clear any previous errors
     setGregorianDate(inputDate);
   };
 
@@ -77,6 +90,7 @@ const HebrewDateConverter = () => {
     <div className="p-8 max-w-md mx-auto bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl shadow-lg text-right" dir="rtl">
       <div className="flex justify-between items-center border-b pb-3 border-indigo-200 mb-6">
         <h1 className="text-3xl font-bold text-indigo-700">ממיר תאריכים לועזי-עברי</h1>
+        <span className="text-xs text-indigo-400">by David-Chen Benshabbat</span>
       </div>
       
       <DateInput 
