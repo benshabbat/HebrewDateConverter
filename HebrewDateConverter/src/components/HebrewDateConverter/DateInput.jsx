@@ -119,6 +119,7 @@ const DateInput = ({ value, onChange, error }) => {
             aria-describedby="date-error"
             min="1300-01-01" 
             max="2500-12-31"
+            onKeyDown={(e) => e.preventDefault()} // Prevent keyboard input
           />
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <svg className="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
