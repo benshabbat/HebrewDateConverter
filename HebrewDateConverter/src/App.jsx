@@ -1,5 +1,5 @@
 import "./App.css";
-import HebrewDateConverter from "./components/HebrewDateConverter";
+import HebrewDateConverter from "./components";
 
 function App() {
   return <HebrewDateConverter />;
