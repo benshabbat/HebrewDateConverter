@@ -1,5 +1,4 @@
-// src/components/HebrewDateConverter/index.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import HebrewDateDisplay from './HebrewDateDisplay';
 import DateInput from './DateInput';
 import { convertToHebrewDate } from './hebrewDateUtils';

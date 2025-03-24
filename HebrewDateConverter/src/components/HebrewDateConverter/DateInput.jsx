@@ -1,6 +1,3 @@
-// src/components/HebrewDateConverter/DateInput.jsx
-import React from 'react';
-
 const DateInput = ({ value, onChange, error }) => {
   return (
     <div className="mb-6">
@@ -15,7 +12,7 @@ const DateInput = ({ value, onChange, error }) => {
           value={value}
           onChange={onChange}
           aria-describedby="date-error"
-          min="1000-01-01" 
+          min="1300-01-01" 
           max="9999-12-31"
         />
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
