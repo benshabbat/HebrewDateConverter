@@ -1,244 +1,270 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getDaysInMonth, parseDateString, formatDateString } from '../utils/dateUtils';
 
 /**
- * קומפוננטת לוח שנה - עם איקונים מוטמעים
+ * קומפוננטת לוח שנה רספונסיבית - תומכת במולטי-פלטפורם
+ * 
+ * @param {string} selectedDate - התאריך הנבחר (YYYY-MM-DD)
+ * @param {function} onSelectDate - פונקציה שתקרא כאשר נבחר תאריך
+ * @param {function} onClose - פונקציה לסגירת הלוח
+ * @returns {JSX.Element} - רכיב React ללוח שנה מותאם למובייל
  */
 const CalendarPicker = ({ selectedDate, onSelectDate, onClose }) => {
-  // המרת התאריך הנבחר לאובייקט Date - רק פעם אחת בטעינה
-  const initialDate = useMemo(() => selectedDate ? new Date(selectedDate) : new Date(), [selectedDate]);
+  // חילוץ התאריך הנוכחי, או שימוש בתאריך של היום
+  const today = new Date();
   
-  // ניהול החודש המוצג בלוח
-  const [currentMonth, setCurrentMonth] = useState(initialDate.getMonth());
-  const [currentYear, setCurrentYear] = useState(initialDate.getFullYear());
-  
-  // מערך שמות החודשים בעברית - קבוע, לא משתנה ברינדורים
-  const hebrewMonths = useMemo(() => [
-    'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
-    'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'
-  ], []);
+  const defaultDate = selectedDate 
+    ? new Date(selectedDate) 
+    : new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-  // ימי השבוע בעברית - קבוע, לא משתנה ברינדורים
-  const weekDays = useMemo(() => ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'], []);
-  
-  // עדכון החודש המוצג כאשר התאריך הנבחר משתנה
-  useEffect(() => {
-    if (selectedDate) {
-      const date = new Date(selectedDate);
-      // רק אם התאריך באמת השתנה, מעדכן את המצב
-      setCurrentMonth(prevMonth => {
-        const newMonth = date.getMonth();
-        return prevMonth !== newMonth ? newMonth : prevMonth;
+  // מצבים לשנה וחודש הנוכחיים בלוח
+  const [currentMonth, setCurrentMonth] = useState(defaultDate.getMonth());
+  const [currentYear, setCurrentYear] = useState(defaultDate.getFullYear());
+  const [touchStartX, setTouchStartX] = useState(null);
+
+  // השמות של ימי השבוע בעברית - קצר למובייל, מלא למסכים גדולים
+  const days = [
+    { short: 'א', full: 'ראשון' },
+    { short: 'ב', full: 'שני' },
+    { short: 'ג', full: 'שלישי' },
+    { short: 'ד', full: 'רביעי' },
+    { short: 'ה', full: 'חמישי' },
+    { short: 'ו', full: 'שישי' },
+    { short: 'ש', full: 'שבת' }
+  ];
+
+  // השמות של החודשים בעברית
+  const months = [
+    'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 
+    'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'
+  ];
+
+  // החלפת חודש
+  const changeMonth = (offset) => {
+    let newMonth = currentMonth + offset;
+    let newYear = currentYear;
+
+    if (newMonth > 11) {
+      newMonth = 0;
+      newYear += 1;
+    } else if (newMonth < 0) {
+      newMonth = 11;
+      newYear -= 1;
+    }
+
+    setCurrentMonth(newMonth);
+    setCurrentYear(newYear);
+  };
+
+  // בניית מערך הימים לחודש הנוכחי
+  const buildCalendarDays = () => {
+    const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+    
+    // חישוב היום הראשון - בישראל יום ראשון הוא היום הראשון בשבוע
+    // בעוד ש-getDay מחזיר 0 עבור יום ראשון
+    const firstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+    
+    // מערך של כל הימים בלוח
+    const calendarDays = [];
+    
+    // ימים מהחודש הקודם
+    const prevMonthDays = getDaysInMonth(
+      currentMonth === 0 ? currentYear - 1 : currentYear,
+      currentMonth === 0 ? 11 : currentMonth - 1
+    );
+    
+    for (let i = firstDay - 1; i >= 0; i--) {
+      calendarDays.push({
+        day: prevMonthDays - i,
+        month: currentMonth === 0 ? 11 : currentMonth - 1,
+        year: currentMonth === 0 ? currentYear - 1 : currentYear,
+        isCurrentMonth: false
       });
-      
-      setCurrentYear(prevYear => {
-        const newYear = date.getFullYear();
-        return prevYear !== newYear ? newYear : prevYear;
-      });
-    }
-  }, [selectedDate]);
-  
-  // מעבר לחודש הקודם - פונקציה מוגדרת פעם אחת
-  const goToPreviousMonth = useCallback(() => {
-    setCurrentMonth(prevMonth => {
-      if (prevMonth === 0) {
-        setCurrentYear(prevYear => prevYear - 1);
-        return 11;
-      }
-      return prevMonth - 1;
-    });
-  }, []);
-  
-  // מעבר לחודש הבא - פונקציה מוגדרת פעם אחת
-  const goToNextMonth = useCallback(() => {
-    setCurrentMonth(prevMonth => {
-      if (prevMonth === 11) {
-        setCurrentYear(prevYear => prevYear + 1);
-        return 0;
-      }
-      return prevMonth + 1;
-    });
-  }, []);
-  
-  // מעבר ישיר לשנה - פונקציה מוגדרת פעם אחת
-  const jumpToYear = useCallback((year) => {
-    if (year >= 1800 && year <= 2300) {
-      setCurrentYear(year);
-    }
-  }, []);
-  
-  // יצירת מערך הימים להצגה בלוח השנה - ממוכרז לשיפור ביצועים
-  const daysArray = useMemo(() => {
-    // היום הראשון בחודש
-    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-    // היום האחרון בחודש
-    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
-    // מספר הימים בחודש
-    const daysInMonth = lastDayOfMonth.getDate();
-    // היום בשבוע של תחילת החודש (0 = ראשון, 6 = שבת)
-    const firstDayOfWeek = firstDayOfMonth.getDay();
-    
-    const days = [];
-    
-    // הוספת תאים ריקים לפני תחילת החודש
-    for (let i = 0; i < firstDayOfWeek; i++) {
-      days.push(null);
     }
     
-    // הוספת כל ימי החודש
+    // ימים מהחודש הנוכחי
     for (let i = 1; i <= daysInMonth; i++) {
-      days.push(new Date(currentYear, currentMonth, i));
+      calendarDays.push({
+        day: i,
+        month: currentMonth,
+        year: currentYear,
+        isCurrentMonth: true
+      });
     }
     
-    return days;
-  }, [currentYear, currentMonth]);
-  
-  // בדיקה אם תאריך נבחר הוא היום - לא מחושב מחדש בכל רינדור
-  const today = useMemo(() => new Date(), []);
-  
-  const isToday = useCallback((date) => {
-    return date.getDate() === today.getDate() &&
-           date.getMonth() === today.getMonth() &&
-           date.getFullYear() === today.getFullYear();
-  }, [today]);
-  
-  // בדיקה אם תאריך הוא התאריך הנבחר - ממוכרז לשיפור ביצועים
-  const selectedDateObj = useMemo(() => selectedDate ? new Date(selectedDate) : null, [selectedDate]);
-  
-  const isSelected = useCallback((date) => {
-    if (!selectedDateObj) return false;
+    // ימים מהחודש הבא
+    const remainingDays = 42 - calendarDays.length; // 6 שורות של 7 ימים
+    for (let i = 1; i <= remainingDays; i++) {
+      calendarDays.push({
+        day: i,
+        month: currentMonth === 11 ? 0 : currentMonth + 1,
+        year: currentMonth === 11 ? currentYear + 1 : currentYear,
+        isCurrentMonth: false
+      });
+    }
     
-    return date.getDate() === selectedDateObj.getDate() &&
-           date.getMonth() === selectedDateObj.getMonth() &&
-           date.getFullYear() === selectedDateObj.getFullYear();
-  }, [selectedDateObj]);
-  
-  // פורמט תאריך ל-YYYY-MM-DD - פונקציה מוגדרת פעם אחת
-  const formatDate = useCallback((date) => {
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }, []);
-  
-  // בחירת התאריך הנוכחי - פונקציה מוגדרת פעם אחת
-  const selectToday = useCallback(() => {
-    const today = new Date();
-    setCurrentMonth(today.getMonth());
-    setCurrentYear(today.getFullYear());
-    onSelectDate(formatDate(today));
-    onClose && onClose();
-  }, [formatDate, onSelectDate, onClose]);
-  
-  // בחירת תאריך מהלוח - פונקציה מוגדרת פעם אחת
-  const handleDateClick = useCallback((date) => {
-    onSelectDate(formatDate(date));
-    onClose && onClose();
-  }, [formatDate, onSelectDate, onClose]);
-  
-  // טיפול בשינוי שנה - פונקציה מוגדרת פעם אחת
-  const handleYearChange = useCallback((e) => {
-    jumpToYear(parseInt(e.target.value));
-  }, [jumpToYear]);
-  
+    return calendarDays;
+  };
+
+  // האם תאריך מסוים הוא התאריך שנבחר
+  const isSelectedDate = (day, month, year) => {
+    if (!selectedDate) return false;
+    
+    const selected = parseDateString(selectedDate);
+    return (
+      parseInt(selected.day) === day &&
+      parseInt(selected.month) - 1 === month &&
+      parseInt(selected.year) === year
+    );
+  };
+
+  // האם תאריך מסוים הוא היום
+  const isToday = (day, month, year) => {
+    return (
+      today.getDate() === day &&
+      today.getMonth() === month &&
+      today.getFullYear() === year
+    );
+  };
+
+  // טיפול בבחירת תאריך
+  const handleDateClick = (day, month, year) => {
+    const paddedMonth = String(month + 1).padStart(2, '0');
+    const paddedDay = String(day).padStart(2, '0');
+    const formattedDate = formatDateString(year.toString(), paddedMonth, paddedDay);
+    onSelectDate(formattedDate);
+  };
+
+  // תמיכה בתזוזה בין חודשים באמצעות מגע
+  const handleTouchStart = (e) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX === null) return;
+    
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX - touchEndX;
+    
+    // אם המשתמש גרר מספיק (יותר מ-50 פיקסלים)
+    if (Math.abs(diff) > 50) {
+      // שלילי משמאל לימין (חודש קודם), חיובי מימין לשמאל (חודש הבא)
+      changeMonth(diff > 0 ? 1 : -1);
+    }
+    
+    setTouchStartX(null);
+  };
+
+  // הוספת מאזיני מקשי מקלדת (נגישות)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      } else if (e.key === 'ArrowLeft') {
+        changeMonth(1); // בעברית זה הפוך, חץ שמאל מזיז ימינה (קדימה)
+      } else if (e.key === 'ArrowRight') {
+        changeMonth(-1); // בעברית זה הפוך, חץ ימין מזיז שמאלה (אחורה)
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [currentMonth, currentYear, onClose]);
+
+  // פורמוט מחרוזת עבור התאריך והחודש
+  const formatMonthYear = () => {
+    return `${months[currentMonth]} ${currentYear}`;
+  };
+
+  // רינדור הלוח
   return (
-    <div className="absolute z-20 right-0 mt-1 p-3 bg-white rounded-lg shadow-xl border border-indigo-100 w-72 select-none">
-      {/* כותרת וניווט */}
-      <div className="flex justify-between items-center mb-4">
+    <div 
+      className="bg-white rounded-lg shadow-lg border border-indigo-200 overflow-hidden w-72 sm:w-80 md:w-96"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* כותרת הלוח - שורת החודש והשנה */}
+      <div className="flex justify-between items-center bg-indigo-600 text-white p-3">
         <button 
-          type="button" 
-          onClick={goToPreviousMonth}
-          className="p-1 rounded-full hover:bg-indigo-100 text-indigo-700 transition-colors"
-          aria-label="חודש קודם"
+          onClick={() => changeMonth(-1)}
+          className="p-1 hover:bg-indigo-700 rounded-full transition-colors"
+          aria-label="החודש הקודם"
         >
-          {/* איקון חץ ימינה - מוטמע ישירות */}
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+          <svg className="w-6 h-6 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
         
-        <div className="text-center">
-          <div className="font-bold text-indigo-800">
-            {hebrewMonths[currentMonth]} {currentYear}
-          </div>
-          
-          {/* בחירת שנה ישירות */}
-          <div className="flex items-center justify-center mt-1">
-            <input
-              type="number"
-              min="1800"
-              max="2300"
-              value={currentYear}
-              onChange={handleYearChange}
-              className="w-16 text-center text-sm border border-indigo-200 rounded px-1 py-0.5"
-              aria-label="שנה"
-            />
-          </div>
+        <div className="text-lg font-bold">
+          {formatMonthYear()}
         </div>
         
         <button 
-          type="button" 
-          onClick={goToNextMonth}
-          className="p-1 rounded-full hover:bg-indigo-100 text-indigo-700 transition-colors"
-          aria-label="חודש הבא"
+          onClick={() => changeMonth(1)}
+          className="p-1 hover:bg-indigo-700 rounded-full transition-colors"
+          aria-label="החודש הבא"
         >
-          {/* איקון חץ שמאלה - מוטמע ישירות */}
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+          <svg className="w-6 h-6 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
       </div>
       
-      {/* כותרות ימי השבוע */}
-      <div className="grid grid-cols-7 gap-1 mb-1">
-        {weekDays.map((day, index) => (
-          <div 
-            key={index} 
-            className="text-center text-xs font-semibold text-indigo-600 py-1"
-          >
-            {day}
+      {/* שורת ימי השבוע */}
+      <div className="grid grid-cols-7 bg-indigo-100 text-indigo-600 text-center">
+        {days.map((day, index) => (
+          <div key={index} className="py-1">
+            <span className="hidden sm:inline">{day.full}</span>
+            <span className="sm:hidden">{day.short}</span>
           </div>
         ))}
       </div>
       
-      {/* לוח הימים */}
-      <div className="grid grid-cols-7 gap-1">
-        {daysArray.map((day, index) => (
-          <div key={index} className="text-center">
-            {day ? (
-              <button
-                type="button"
-                onClick={() => handleDateClick(day)}
-                className={`w-8 h-8 flex items-center justify-center rounded-full text-sm transition-colors
-                  ${isSelected(day) 
-                    ? 'bg-indigo-600 text-white font-bold' 
-                    : isToday(day)
-                      ? 'bg-indigo-100 text-indigo-800 font-semibold' 
-                      : 'hover:bg-indigo-50 text-gray-700'}`}
-                aria-label={`${day.getDate()} ב${hebrewMonths[day.getMonth()]} ${day.getFullYear()}`}
-              >
-                {day.getDate()}
-              </button>
-            ) : (
-              <div className="w-8 h-8"></div>
-            )}
-          </div>
-        ))}
+      {/* הימים בלוח */}
+      <div className="grid grid-cols-7 gap-1 p-2">
+        {buildCalendarDays().map((dateObj, index) => {
+          const isSelected = isSelectedDate(dateObj.day, dateObj.month, dateObj.year);
+          const isTodayDate = isToday(dateObj.day, dateObj.month, dateObj.year);
+          
+          return (
+            <button
+              key={index}
+              onClick={() => handleDateClick(dateObj.day, dateObj.month, dateObj.year)}
+              className={`
+                p-1 sm:p-2 h-8 sm:h-10 w-8 sm:w-10 flex items-center justify-center rounded-full text-sm
+                ${!dateObj.isCurrentMonth ? 'text-gray-400' : 'text-gray-700'}
+                ${isSelected ? 'bg-indigo-600 text-white' : ''}
+                ${!isSelected && isTodayDate ? 'border border-indigo-600' : ''}
+                ${!isSelected && !isTodayDate ? 'hover:bg-indigo-100' : ''}
+                transition-colors
+              `}
+              aria-selected={isSelected}
+              aria-label={`${dateObj.day}/${dateObj.month + 1}/${dateObj.year}`}
+            >
+              {dateObj.day}
+            </button>
+          );
+        })}
       </div>
       
-      {/* כפתורי קיצור */}
-      <div className="mt-3 pt-2 border-t border-indigo-100 flex justify-between">
+      {/* כפתורי פעולות - היום/סגירה */}
+      <div className="flex justify-between border-t border-indigo-200 p-2">
         <button
-          type="button"
-          onClick={selectToday}
-          className="text-xs px-2 py-1 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+          onClick={() => {
+            setCurrentMonth(today.getMonth());
+            setCurrentYear(today.getFullYear());
+          }}
+          className="px-3 py-1 text-sm text-indigo-600 hover:bg-indigo-100 rounded transition-colors"
         >
           היום
         </button>
         
         <button
-          type="button"
           onClick={onClose}
-          className="text-xs px-2 py-1 text-gray-500 hover:bg-gray-50 rounded transition-colors"
+          className="px-3 py-1 text-sm text-indigo-600 hover:bg-indigo-100 rounded transition-colors"
         >
           סגור
         </button>

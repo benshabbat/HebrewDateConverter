@@ -17,7 +17,7 @@ const DaySelect = ({ value, month, year, onChange }) => {
   }, [year, month]);
   
   return (
-    <div className="w-1/3 relative">
+    <div className="w-full sm:w-1/3 relative">
       <label className="block text-indigo-600 text-sm font-medium mb-1">
         יום
       </label>

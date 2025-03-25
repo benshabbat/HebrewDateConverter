@@ -29,8 +29,8 @@ const DateInput = ({ value, onChange, error: externalError }) => {
         הזן תאריך לועזי:
       </label>
       
-      <div className="flex mb-3">
-        <div className="flex-1 flex space-x-3 rtl:space-x-reverse">
+      <div className="flex flex-col md:flex-row mb-3">
+        <div className="flex-1 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-3 rtl:space-x-reverse mb-4 md:mb-0">
           {/* קומפוננטת שדה שנה */}
           <YearInput 
             value={fields.year} 
@@ -53,10 +53,12 @@ const DateInput = ({ value, onChange, error: externalError }) => {
         </div>
         
         {/* קומפוננטת כפתור לוח שנה */}
-        <CalendarButton 
-          selectedDate={fullDate} 
-          onSelectDate={handlers.handleDateSelected} 
-        />
+        <div className="flex justify-center md:justify-start md:mr-2">
+          <CalendarButton 
+            selectedDate={fullDate} 
+            onSelectDate={handlers.handleDateSelected} 
+          />
+        </div>
       </div>
       
       {/* קומפוננטת הודעת שגיאה */}

@@ -92,3 +92,30 @@ export const getDaysInMonth = (year, month) => {
   export const formatDateString = (year, month, day) => {
     return year && month && day ? `${year}-${month}-${day}` : '';
   };
+  
+  /**
+   * המרת תאריך לועזי לפורמט מקובל בעברית
+   * 
+   * @param {string} gregorianDate - תאריך בפורמט YYYY-MM-DD
+   * @returns {string} - תאריך בפורמט DD/MM/YYYY
+   */
+  export const formatGregorianDate = (gregorianDate) => {
+    if (!gregorianDate) return '';
+    
+    const { year, month, day } = parseDateString(gregorianDate);
+    return `${day}/${month}/${year}`;
+  };
+  
+  /**
+   * הרכבת מחרוזת תאריך מלאה עם מועד מיוחד (אם קיים)
+   * 
+   * @param {string} dayOfWeek - יום בשבוע
+   * @param {string} hebrewDate - התאריך העברי
+   * @param {string} dateNote - מועד מיוחד (אופציונלי)
+   * @returns {string} - מחרוזת תאריך מלאה
+   */
+  export const getFullDateString = (dayOfWeek, hebrewDate, dateNote) => {
+    return dateNote 
+      ? `${dayOfWeek}, ${hebrewDate} (${dateNote})`
+      : `${dayOfWeek}, ${hebrewDate}`;
+  };
