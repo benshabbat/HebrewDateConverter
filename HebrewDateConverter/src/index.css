@@ -2,71 +2,139 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Right-to-left (RTL) configuration */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="rtl"] .rtl\:space-x-reverse > * + * {
+  margin-right: 0.5rem;
+  margin-left: 0;
+}
+
+[dir="rtl"] .rtl\:rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* Color variables */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --primary-color: #4F46E5;  /* Indigo 600 */
+  --primary-light: #EEF2FF;  /* Indigo 50 */
+  --primary-dark: #4338CA;  /* Indigo 700 */
+  --secondary-color: #A78BFA; /* Purple 400 */
+  --text-color: #1F2937; /* Gray 800 */
+  --background-color: #F9FAFB; /* Gray 50 */
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
+html, body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  height: 100%;
   margin: 0;
+  padding: 0;
+}
+
+/* Animations for calendar transitions */
+@keyframes slideLeft {
+  0% { transform: translateX(-5%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideRight {
+  0% { transform: translateX(5%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+.animate-slide-left {
+  animation: slideLeft 0.2s ease-in-out;
+}
+
+.animate-slide-right {
+  animation: slideRight 0.2s ease-in-out;
+}
+
+/* Scale animation for date updates */
+.scale-102 {
+  transform: scale(1.02);
+}
+
+/* Improved touch handling */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* Responsive container */
+#root {
   display: flex;
-  place-items: center;
-  min-width: 320px;
+  justify-content: center;
+  align-items: center;
   min-height: 100vh;
+  padding: 1rem;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Override focus styles for better accessibility */
+:focus {
+  outline: none;
 }
 
-button {
+:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* iOS specific adjustments */
+@supports (-webkit-touch-callout: none) {
+  /* Prevent iOS text size adjust after orientation change */
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  /* Fix for iOS momentum scrolling */
+  .overflow-auto,
+  .overflow-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Fix iOS tap highlight */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Improved field focus styles */
+input:focus,
+select:focus {
+  @apply border-indigo-500 ring ring-indigo-200 ring-opacity-50;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--primary-light);
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+/* Print optimizations */
+@media print {
+  body {
+    background-color: white;
   }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+  
+  .no-print {
+    display: none !important;
   }
 }

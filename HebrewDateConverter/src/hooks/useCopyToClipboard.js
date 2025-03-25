@@ -1,27 +1,27 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 
 /**
- * הוק להעתקת טקסט ללוח וניהול מצב ההעתקה
+ * Hook for copying text to clipboard and managing copy state
  * 
- * @param {number} resetDelay - זמן איפוס מצב ההעתקה במילישניות
- * @returns {Array} - [האם הועתק בהצלחה, פונקציית העתקה]
+ * @param {number} resetDelay - Time to reset copy state in milliseconds
+ * @returns {Array} - [Copied successfully, copy function]
  */
-const useCopyToClipboard = (resetDelay = 2000) => {
+export const useCopyToClipboard = (resetDelay = 2000) => {
   const [copied, setCopied] = useState(false);
   const timerRef = useRef(null);
   
-  // פונקציית העתקה
+  // Copy function
   const copyToClipboard = useCallback(async (text) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
       
-      // ניקוי טיימר קודם אם קיים
+      // Clear previous timer if exists
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
       
-      // הגדר טיימר חדש לאיפוס מצב ההעתקה
+      // Set new timer to reset copy state
       timerRef.current = setTimeout(() => {
         setCopied(false);
         timerRef.current = null;
@@ -29,12 +29,12 @@ const useCopyToClipboard = (resetDelay = 2000) => {
       
       return true;
     } catch (err) {
-      console.error('שגיאה בהעתקה: ', err);
+      console.error('Error copying: ', err);
       return false;
     }
   }, [resetDelay]);
   
-  // ניקוי טיימרים בעת הסרת הקומפוננטה
+  // Cleanup timers on unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) {
@@ -46,5 +46,3 @@ const useCopyToClipboard = (resetDelay = 2000) => {
   
   return [copied, copyToClipboard];
 };
-
-export default useCopyToClipboard;

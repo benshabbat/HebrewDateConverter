@@ -1,4 +1,4 @@
-import { getHebrewMonthNames } from '../utils/dateUtils';
+import { getHebrewMonthNames } from '../../utils/dateUtils';
 
 export const MonthSelect = ({ value, onChange }) => {
   // Hebrew month names

@@ -1,35 +1,27 @@
 import React, { useState, useRef } from 'react';
-import CalendarPicker from './CalendarPicker';
-import ModalBackdrop from './ModalBackdrop';
-import useClickOutside from '../hooks/useClickOutside';
+import { CalendarPicker } from '../CalendarPicker';
+import { useClickOutside } from '../../hooks/useClickOutside';
 
-/**
- * קומפוננטת כפתור לוח שנה עם חלון צף
- * 
- * @param {string} selectedDate - התאריך הנבחר (YYYY-MM-DD)
- * @param {function} onSelectDate - פונקציה שתקרא כאשר נבחר תאריך מהלוח
- * @returns {JSX.Element} - רכיב React לכפתור לוח שנה
- */
-const CalendarButton = ({ selectedDate, onSelectDate }) => {
+export const CalendarButton = ({ selectedDate, onSelectDate }) => {
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarButtonRef = useRef(null);
   
-  // פתיחה/סגירה של לוח השנה
+  // Toggle calendar open/close
   const toggleCalendar = () => {
     setShowCalendar(prev => !prev);
   };
   
-  // סגירת הלוח
+  // Close calendar
   const closeCalendar = () => {
     setShowCalendar(false);
   };
   
-  // שימוש בהוק המותאם לסגירה בלחיצה מחוץ לאלמנט - תומך גם במגע למובייל
+  // Use custom hook to close on click outside - also supports touch for mobile
   useClickOutside(calendarButtonRef, () => {
     setShowCalendar(false);
   }, [showCalendar]);
   
-  // טיפול בבחירת תאריך מהלוח
+  // Handle date selection from calendar
   const handleDateSelected = (date) => {
     if (date) {
       onSelectDate(date);
@@ -51,7 +43,7 @@ const CalendarButton = ({ selectedDate, onSelectDate }) => {
         </svg>
       </button>
       
-      {/* לוח שנה - מיקום מתוקן, מתחת וצמוד לכפתור */}
+      {/* Calendar - positioned below and aligned to button */}
       {showCalendar && (
         <div className="fixed sm:absolute top-1/2 left-1/2 sm:top-full sm:left-0 transform -translate-x-1/2 -translate-y-1/2 sm:translate-y-0 sm:translate-x-0 sm:mt-1 z-50">
           <div className="max-w-full">
@@ -66,5 +58,3 @@ const CalendarButton = ({ selectedDate, onSelectDate }) => {
     </div>
   );
 };
-
-export default CalendarButton;

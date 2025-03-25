@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { calculateDayOptions } from '../utils/dateUtils';
+import { calculateDayOptions } from '../../utils/dateUtils';
 
 export const DaySelect = ({ value, month, year, onChange }) => {
   // Calculate day options - depends on month and year

@@ -7,32 +7,32 @@ import {
 } from '../utils/dateUtils';
 
 /**
- * הוק לניהול שדות של קומפוננטת תאריך
+ * Hook for managing date field components
  * 
- * @param {string} initialValue - ערך התחלתי של התאריך (YYYY-MM-DD)
- * @param {function} onChange - פונקציה שתקרא כאשר התאריך משתנה
- * @param {string} externalError - שגיאה חיצונית (אופציונלי)
- * @returns {Object} - אובייקט עם ערכים ופונקציות לניהול שדות התאריך
+ * @param {string} initialValue - Initial date value (YYYY-MM-DD)
+ * @param {function} onChange - Function to call when date changes
+ * @param {string} externalError - External error (optional)
+ * @returns {Object} - Object with values and functions for managing date fields
  */
-const useDateFields = (initialValue, onChange, externalError) => {
-  // פירוק הערך ההתחלתי לרכיבים
+export const useDateFields = (initialValue, onChange, externalError) => {
+  // Break down initial value to components
   const initialFields = parseDateString(initialValue);
   
-  // מצב פנימי לשדות - מאפשר הקלדה בלי התנגשויות
+  // Internal state for fields - allows typing without conflicts
   const [year, setYear] = useState(initialFields.year);
   const [month, setMonth] = useState(initialFields.month);
   const [day, setDay] = useState(initialFields.day);
   const [error, setError] = useState(externalError || '');
   
-  // שמירת התאריך הקודם לצורך השוואה
+  // Keep previous date for comparison
   const prevValueRef = useRef(initialValue);
   
-  // חישוב התאריך המלא רק כשהערכים משתנים
+  // Calculate full date only when values change
   const fullDate = useMemo(() => {
     return formatDateString(year, month, day);
   }, [year, month, day]);
   
-  // עדכון השדות הפנימיים כאשר התאריך החיצוני משתנה
+  // Update internal fields when external date changes
   useEffect(() => {
     if (initialValue && initialValue !== prevValueRef.current) {
       const { year: newYear, month: newMonth, day: newDay } = parseDateString(initialValue);
@@ -43,50 +43,50 @@ const useDateFields = (initialValue, onChange, externalError) => {
     }
   }, [initialValue]);
 
-  // עדכון שגיאה חיצונית
+  // Update external error
   useEffect(() => {
     setError(externalError || '');
   }, [externalError]);
   
-  // טיפול בשינוי בשדה השנה
+  // Handle year field change
   const handleYearChange = useCallback((e) => {
     const newYear = e.target.value;
     
-    // עדכון המצב המקומי מייד
+    // Update local state immediately
     setYear(newYear);
     
-    // וידוא שהשנה בטווח הנכון
+    // Validate year is in correct range
     const yearError = validateYear(newYear);
     if (yearError) {
       setError(yearError);
       return;
     }
     
-    // ניקוי שגיאות
+    // Clear errors
     setError('');
     
-    // עדכון התאריך המלא
+    // Update full date
     if (newYear && month && day) {
       onChange({ target: { value: formatDateString(newYear, month, day) } });
     }
   }, [month, day, onChange]);
   
-  // טיפול בשינוי בשדה החודש
+  // Handle month field change
   const handleMonthChange = useCallback((e) => {
     const newMonth = e.target.value;
     setMonth(newMonth);
     
-    // התאמת היום לחודש החדש אם צריך
+    // Adjust day to new month if needed
     if (newMonth && day) {
       const maxDays = getDaysInMonth(parseInt(year), parseInt(newMonth) - 1);
       const currentDay = parseInt(day);
       
       if (currentDay > maxDays) {
-        // אם היום הנוכחי גדול ממספר הימים בחודש החדש, התאם אותו
+        // If current day is greater than days in new month, adjust it
         const newDay = maxDays.toString().padStart(2, '0');
         setDay(newDay);
         
-        // עדכון התאריך המלא
+        // Update full date
         if (year) {
           onChange({ target: { value: formatDateString(year, newMonth, newDay) } });
         }
@@ -94,35 +94,35 @@ const useDateFields = (initialValue, onChange, externalError) => {
       }
     }
     
-    // עדכון התאריך המלא
+    // Update full date
     if (year && newMonth && day) {
       onChange({ target: { value: formatDateString(year, newMonth, day) } });
     }
   }, [year, day, onChange]);
   
-  // טיפול בשינוי בשדה היום
+  // Handle day field change
   const handleDayChange = useCallback((e) => {
     const newDay = e.target.value;
     setDay(newDay);
     
-    // עדכון התאריך המלא
+    // Update full date
     if (year && month && newDay) {
       onChange({ target: { value: formatDateString(year, month, newDay) } });
     }
   }, [year, month, onChange]);
   
-  // טיפול בבחירת תאריך מלוח השנה
+  // Handle date selection from calendar
   const handleDateSelected = useCallback((date) => {
     if (date) {
       const { year: newYear, month: newMonth, day: newDay } = parseDateString(date);
       
-      // עדכון כל השדות
+      // Update all fields
       setYear(newYear);
       setMonth(newMonth);
       setDay(newDay);
       setError('');
       
-      // עדכון התאריך המלא
+      // Update full date
       onChange({ target: { value: date } });
     }
   }, [onChange]);
@@ -136,5 +136,3 @@ const useDateFields = (initialValue, onChange, externalError) => {
     fullDate
   };
 };
-
-export default useDateFields;

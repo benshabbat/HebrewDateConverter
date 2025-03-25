@@ -1,19 +1,17 @@
-// src/utils/holidayUtils.js
-import { HOLIDAY_TYPES, HOLIDAYS_INFO, getHolidayType } from '../constants/hebrewDates';
+import { HOLIDAY_TYPES } from '../constants/hebrewDates';
 
 /**
- * פונקציה משופרת לזיהוי חגים יהודיים ותאריכים מיוחדים
- * @param {Date} date - התאריך לבדיקה
- * @returns {Object|null} - אובייקט עם מידע על החג או null אם אין
+ * Enhanced function for detecting Jewish holidays and special dates
+ * @param {Date} date - Date to check
+ * @returns {Object|null} - Object with holiday info or null if none
  */
 export const getHolidayInfo = (date) => {
   try {
     if (!date || isNaN(date.getTime())) {
-      console.error('תאריך לא תקין:', date);
       return null;
     }
 
-    // קבלת רכיבי התאריך העברי באמצעות Intl API
+    // Get Hebrew date components using Intl API
     const formatter = new Intl.DateTimeFormat('he-IL', {
       calendar: 'hebrew',
       day: 'numeric',
@@ -23,14 +21,10 @@ export const getHolidayInfo = (date) => {
     
     const parts = formatter.formatToParts(date);
     
-    // הדפסה לצורכי ניפוי באגים
-    console.log('Hebrew date parts:', parts);
-    
     const hebrewDay = parseInt(parts.find(part => part.type === 'day')?.value || '0', 10);
     const hebrewMonth = parseInt(parts.find(part => part.type === 'month')?.value || '0', 10);
-    const hebrewYear = parseInt(parts.find(part => part.type === 'year')?.value || '0', 10);
     
-    // שבת
+    // Shabbat
     if (date.getDay() === 6) {
       return {
         name: 'שבת',
@@ -38,15 +32,15 @@ export const getHolidayInfo = (date) => {
       };
     }
     
-    // ראש חודש
-    if (hebrewDay === 1 && hebrewMonth !== 7) { // לא כולל ראש השנה
+    // Rosh Chodesh
+    if (hebrewDay === 1 && hebrewMonth !== 7) { // Not including Rosh Hashanah
       return {
         name: `ראש חודש ${getHebrewMonthName(hebrewMonth)}`,
         type: HOLIDAY_TYPES.ROSH_CHODESH
       };
     }
     
-    // חגי תשרי (חודש 7)
+    // Tishrei holidays (month 7)
     if (hebrewMonth === 7) {
       if (hebrewDay === 1 || hebrewDay === 2) {
         return {
@@ -91,7 +85,7 @@ export const getHolidayInfo = (date) => {
       }
     }
     
-    // חנוכה
+    // Chanukah
     if ((hebrewMonth === 9 && hebrewDay >= 25) || (hebrewMonth === 10 && hebrewDay <= 2)) {
       return {
         name: 'חנוכה',
@@ -99,7 +93,7 @@ export const getHolidayInfo = (date) => {
       };
     }
     
-    // ט"ו בשבט
+    // Tu BiShvat
     if (hebrewMonth === 11 && hebrewDay === 15) {
       return {
         name: 'ט״ו בשבט',
@@ -107,7 +101,7 @@ export const getHolidayInfo = (date) => {
       };
     }
     
-    // פורים
+    // Purim
     if (hebrewMonth === 12 && hebrewDay === 14) {
       return {
         name: 'פורים',
@@ -115,7 +109,7 @@ export const getHolidayInfo = (date) => {
       };
     }
     
-    // פסח וימי העומר
+    // Passover and Omer days
     if (hebrewMonth === 1) {
       if (hebrewDay === 15) {
         return {
@@ -139,7 +133,7 @@ export const getHolidayInfo = (date) => {
       }
     }
     
-    // ל"ג בעומר
+    // Lag BaOmer
     if (hebrewMonth === 2 && hebrewDay === 18) {
       return {
         name: 'ל״ג בעומר',
@@ -147,7 +141,7 @@ export const getHolidayInfo = (date) => {
       };
     }
     
-    // שבועות
+    // Shavuot
     if (hebrewMonth === 3 && hebrewDay === 6) {
       return {
         name: 'שבועות',
@@ -155,7 +149,7 @@ export const getHolidayInfo = (date) => {
       };
     }
     
-    // צום י"ז בתמוז
+    // Fast of 17th of Tammuz
     if (hebrewMonth === 4 && hebrewDay === 17) {
       return {
         name: 'צום י״ז בתמוז',
@@ -163,7 +157,7 @@ export const getHolidayInfo = (date) => {
       };
     }
     
-    // תשעה באב
+    // Tisha B'Av
     if (hebrewMonth === 5 && hebrewDay === 9) {
       return {
         name: 'תשעה באב',
@@ -173,29 +167,19 @@ export const getHolidayInfo = (date) => {
     
     return null;
   } catch (error) {
-    console.error('שגיאה בזיהוי חג:', error);
+    console.error('Error detecting holiday:', error);
     return null;
   }
 };
 
 /**
- * המרת אובייקט מידע על חג למחרוזת תצוגה
- * @param {Object} holidayInfo - אובייקט מידע על החג
- * @returns {string|null} - שם החג כמחרוזת, או null אם אין חג
+ * Helper function to get Hebrew month name
+ * @param {number} month - Hebrew month number (1-13)
+ * @returns {string} - Hebrew month name
  */
-export const getHolidayDisplayString = (holidayInfo) => {
-  if (!holidayInfo) return null;
-  return holidayInfo.name;
-};
-
-/**
- * פונקציית עזר לקבלת שם חודש עברי
- * @param {number} month - מספר חודש עברי (1-13)
- * @returns {string} - שם חודש עברי
- */
-function getHebrewMonthName(month) {
+const getHebrewMonthName = (month) => {
   const hebrewMonthNames = [
-    '',  // ריק עבור אינדוקס 1
+    '',  // Empty for index 1
     'ניסן',
     'אייר',
     'סיוון',
@@ -212,4 +196,4 @@ function getHebrewMonthName(month) {
   ];
   
   return hebrewMonthNames[month] || '';
-}
+};

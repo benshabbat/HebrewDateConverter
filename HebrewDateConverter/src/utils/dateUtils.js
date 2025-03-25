@@ -1,20 +1,20 @@
 /**
- * פונקציות עזר לעבודה עם תאריכים
+ * Utility functions for working with dates
  */
 
 /**
- * מחזיר את מספר הימים בחודש נתון
- * @param {number} year - שנה במספר שלם
- * @param {number} month - אינדקס החודש (0-11)
- * @returns {number} - מספר הימים בחודש
+ * Get the number of days in a month
+ * @param {number} year - Year as integer
+ * @param {number} month - Month index (0-11)
+ * @returns {number} - Number of days in month
  */
 export const getDaysInMonth = (year, month) => {
     return new Date(year, month + 1, 0).getDate();
   };
   
   /**
-   * מחזיר מערך של אובייקטים עם שמות החודשים בעברית
-   * @returns {Array} - מערך של אובייקטים {value, label}
+   * Get array of objects with Hebrew month names
+   * @returns {Array} - Array of objects {value, label}
    */
   export const getHebrewMonthNames = () => [
     { value: '01', label: 'ינואר' },
@@ -32,9 +32,9 @@ export const getDaysInMonth = (year, month) => {
   ];
   
   /**
-   * בודק אם השנה תקינה
-   * @param {string} year - השנה כמחרוזת
-   * @returns {string|null} - הודעת שגיאה או null אם תקין
+   * Validate year is within range
+   * @param {string} year - Year as string
+   * @returns {string|null} - Error message or null if valid
    */
   export const validateYear = (year) => {
     if (!year) return null;
@@ -48,10 +48,10 @@ export const getDaysInMonth = (year, month) => {
   };
   
   /**
-   * חישוב אופציות הימים בחודש
-   * @param {string} year - השנה כמחרוזת
-   * @param {string} month - החודש כמחרוזת (01-12)
-   * @returns {Array} - מערך של מספרי הימים בחודש
+   * Calculate day options for a month
+   * @param {string} year - Year as string
+   * @param {string} month - Month as string (01-12)
+   * @returns {Array} - Array of day numbers in month
    */
   export const calculateDayOptions = (year, month) => {
     if (!month || !year) return Array.from({ length: 31 }, (_, i) => i + 1);
@@ -61,9 +61,9 @@ export const getDaysInMonth = (year, month) => {
   };
   
   /**
-   * פירוק מחרוזת תאריך לרכיביה
-   * @param {string} dateString - מחרוזת תאריך בפורמט YYYY-MM-DD
-   * @returns {Object} - אובייקט עם השדות year, month, day
+   * Parse date string into its components
+   * @param {string} dateString - Date string in format YYYY-MM-DD
+   * @returns {Object} - Object with year, month, day fields
    */
   export const parseDateString = (dateString) => {
     if (!dateString) {
@@ -83,21 +83,31 @@ export const getDaysInMonth = (year, month) => {
   };
   
   /**
-   * בניית מחרוזת תאריך מרכיבים
-   * @param {string} year - שנה
-   * @param {string} month - חודש
-   * @param {string} day - יום
-   * @returns {string} - מחרוזת תאריך בפורמט YYYY-MM-DD או מחרוזת ריקה אם חסרים נתונים
+   * Build date string from components
+   * @param {string} year - Year
+   * @param {string} month - Month
+   * @param {string} day - Day
+   * @returns {string} - Date string in format YYYY-MM-DD or empty if missing data
    */
   export const formatDateString = (year, month, day) => {
     return year && month && day ? `${year}-${month}-${day}` : '';
   };
   
   /**
-   * המרת תאריך לועזי לפורמט מקובל בעברית
+   * Format date as yyyy-MM-dd
+   * @param {Date} date - Date to format
+   * @returns {string} - Formatted date string
+   */
+  export const formatDate = (date) => {
+    if (!date) return '';
+    return date.toISOString().split('T')[0];
+  };
+  
+  /**
+   * Convert Gregorian date to human-readable format
    * 
-   * @param {string} gregorianDate - תאריך בפורמט YYYY-MM-DD
-   * @returns {string} - תאריך בפורמט DD/MM/YYYY
+   * @param {string} gregorianDate - Date in format YYYY-MM-DD
+   * @returns {string} - Date in format DD/MM/YYYY
    */
   export const formatGregorianDate = (gregorianDate) => {
     if (!gregorianDate) return '';
@@ -107,15 +117,16 @@ export const getDaysInMonth = (year, month) => {
   };
   
   /**
-   * הרכבת מחרוזת תאריך מלאה עם מועד מיוחד (אם קיים)
+   * Build full date string with special event (if exists)
    * 
-   * @param {string} dayOfWeek - יום בשבוע
-   * @param {string} hebrewDate - התאריך העברי
-   * @param {string} dateNote - מועד מיוחד (אופציונלי)
-   * @returns {string} - מחרוזת תאריך מלאה
+   * @param {string} dayOfWeek - Day of week
+   * @param {string} hebrewDate - Hebrew date
+   * @param {string} dateNote - Special event (optional)
+   * @returns {string} - Full date string
    */
   export const getFullDateString = (dayOfWeek, hebrewDate, dateNote) => {
     return dateNote 
       ? `${dayOfWeek}, ${hebrewDate} (${dateNote})`
       : `${dayOfWeek}, ${hebrewDate}`;
   };
+  

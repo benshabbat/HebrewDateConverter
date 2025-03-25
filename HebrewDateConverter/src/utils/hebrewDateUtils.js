@@ -60,26 +60,6 @@ export const convertToGematriya = (num) => {
   };
   
   /**
-   * Formats a date as yyyy-MM-dd
-   * @param {Date} date - The date to format
-   * @returns {string} Formatted date string
-   */
-  export const formatDate = (date) => {
-    if (!date) return '';
-    return date.toISOString().split('T')[0];
-  };
-  
-  /**
-   * Gets the number of days in a month
-   * @param {number} year - Year
-   * @param {number} month - Month (0-11)
-   * @returns {number} Number of days in the month
-   */
-  export const getDaysInMonth = (year, month) => {
-    return new Date(year, month + 1, 0).getDate();
-  };
-  
-  /**
    * Gets the Hebrew day of week
    * @param {Date} date - Date object
    * @returns {string} Hebrew day name
@@ -88,64 +68,6 @@ export const convertToGematriya = (num) => {
     const dayIndex = date.getDay();
     const hebrewDays = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
     return `יום ${hebrewDays[dayIndex]}`;
-  };
-  
-  /**
-   * Get special notes for the date (holidays, special days, etc.)
-   * @deprecated Use getHolidayInfo from holidayUtils.js instead
-   * @param {Date} date - Date object
-   * @returns {string|null} Note for the date, or null if none
-   */
-  export const getDateNote = (date) => {
-    console.warn('getDateNote is deprecated. Use getHolidayInfo from holidayUtils.js instead.');
-    try {
-      const formatter = new Intl.DateTimeFormat(['he-IL'], {
-        calendar: 'hebrew',
-        day: 'numeric',
-        month: 'numeric',
-        year: 'numeric'
-      });
-      
-      const parts = formatter.formatToParts(date);
-      const hebrewMonth = parseInt(parts.find(part => part.type === 'month')?.value || '0', 10);
-      const hebrewDay = parseInt(parts.find(part => part.type === 'day')?.value || '0', 10);
-      
-      // Major Jewish holidays - basic implementation
-      if (hebrewMonth === 7 && hebrewDay === 1) return 'ראש השנה';
-      if (hebrewMonth === 7 && hebrewDay === 2) return 'ראש השנה (יום שני)';
-      if (hebrewMonth === 7 && hebrewDay === 10) return 'יום כיפור';
-      if (hebrewMonth === 7 && hebrewDay === 15) return 'סוכות';
-      if (hebrewMonth === 7 && hebrewDay >= 16 && hebrewDay <= 21) return 'חול המועד סוכות';
-      if (hebrewMonth === 7 && hebrewDay === 22) return 'שמיני עצרת';
-      
-      if (hebrewMonth === 9 && hebrewDay >= 25) return 'חנוכה';
-      if (hebrewMonth === 10 && hebrewDay <= 2) return 'חנוכה';
-      if (hebrewMonth === 10 && hebrewDay === 10) return 'צום עשרה בטבת';
-      
-      if (hebrewMonth === 11 && hebrewDay === 15) return 'ט״ו בשבט';
-      
-      if (hebrewMonth === 12 && hebrewDay === 14) return 'פורים';
-      if (hebrewMonth === 12 && hebrewDay === 13) return 'תענית אסתר';
-      
-      if (hebrewMonth === 1 && hebrewDay === 15) return 'פסח';
-      if (hebrewMonth === 1 && hebrewDay >= 16 && hebrewDay <= 20) return 'חול המועד פסח';
-      if (hebrewMonth === 1 && hebrewDay === 21) return 'שביעי של פסח';
-      
-      if (hebrewMonth === 2 && hebrewDay === 18) return 'ל״ג בעומר';
-      
-      if (hebrewMonth === 3 && hebrewDay === 6) return 'שבועות';
-      
-      if (hebrewMonth === 4 && hebrewDay === 17) return 'צום י״ז בתמוז';
-      if (hebrewMonth === 5 && hebrewDay === 9) return 'תשעה באב';
-      
-      // Shabbat
-      if (date.getDay() === 6) return 'שבת';
-      
-      return null;
-    } catch (error) {
-      console.error('Error determining special date:', error);
-      return null;
-    }
   };
   
   /**
@@ -168,9 +90,6 @@ export const convertToGematriya = (num) => {
       const day = parts.find(part => part.type === 'day')?.value;
       const month = parts.find(part => part.type === 'month')?.value;
       const year = parts.find(part => part.type === 'year')?.value;
-      
-      // Log for debugging
-      console.log('Hebrew date raw parts:', { day, month, year });
       
       // Convert day to gematria
       let hebrewDay = day ? convertToGematriya(parseInt(day, 10)) : '';
@@ -199,16 +118,3 @@ export const convertToGematriya = (num) => {
       return 'שגיאה בהמרת התאריך';
     }
   };
-  
-  /**
-   * Array of Hebrew month names
-   */
-  export const hebrewMonths = [
-    'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
-    'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'
-  ];
-  
-  /**
-   * Array of Hebrew weekday abbreviations
-   */
-  export const weekDays = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];

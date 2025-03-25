@@ -1,15 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { getDaysInMonth, parseDateString, formatDateString } from '../utils/dateUtils';
 
-/**
- * Enhanced calendar picker component with improved multi-platform support
- * 
- * @param {string} selectedDate - Selected date (YYYY-MM-DD)
- * @param {function} onSelectDate - Function called when a date is selected
- * @param {function} onClose - Function to close the calendar
- * @returns {JSX.Element} - React component for an enhanced calendar picker
- */
-const CalendarPicker = ({ selectedDate, onSelectDate, onClose }) => {
+export const CalendarPicker = ({ selectedDate, onSelectDate, onClose }) => {
   // Extract current date, or use today
   const today = new Date();
   
@@ -308,5 +300,3 @@ const CalendarPicker = ({ selectedDate, onSelectDate, onClose }) => {
     </div>
   );
 };
-
-export default CalendarPicker;

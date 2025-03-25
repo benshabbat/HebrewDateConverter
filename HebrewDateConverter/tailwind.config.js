@@ -1,7 +1,8 @@
-// tailwind.config.js
+/** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
@@ -37,7 +38,6 @@ export default {
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
       },
-      touchAction: ['responsive'],
       fontSize: {
         'xxs': '0.65rem',
       },
@@ -47,7 +47,31 @@ export default {
       scale: {
         '102': '1.02',
       },
+      borderWidth: {
+        '3': '3px',
+      },
+      zIndex: {
+        '60': '60',
+      },
+      colors: {
+        'indigo': {
+          50: '#EEF2FF',
+          100: '#E0E7FF',
+          200: '#C7D2FE',
+          300: '#A5B4FC',
+          400: '#818CF8',
+          500: '#6366F1',
+          600: '#4F46E5',
+          700: '#4338CA',
+          800: '#3730A3',
+          900: '#312E81',
+        },
+      },
     },
   },
   plugins: [],
+  // Support for RTL
+  corePlugins: {
+    space: false,
+  },
 }

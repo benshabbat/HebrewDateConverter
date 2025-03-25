@@ -1,156 +1,156 @@
 /**
- * קבועים ותיאורים של תאריכי החגים העבריים
+ * Constants and descriptions for Hebrew dates
  */
 
 export const HOLIDAY_TYPES = {
-    MAJOR_HOLIDAY: 'major-holiday',     // חג ראשי (כמו פסח, סוכות, שבועות, ראש השנה, יום כיפור)
-    MINOR_HOLIDAY: 'minor-holiday',     // חג משני (כמו חנוכה, פורים, ט"ו בשבט)
-    REMEMBRANCE: 'remembrance',         // ימי זיכרון (כמו יום השואה, יום הזיכרון)
-    INDEPENDENCE: 'independence',       // ימי עצמאות (יום העצמאות)
-    CHOL_HAMOED: 'chol-hamoed',         // חול המועד
-    SHABBAT: 'shabbat',                 // שבת
-    ROSH_CHODESH: 'rosh-chodesh',       // ראש חודש
-    FAST_DAY: 'fast-day',               // יום צום
-    SPECIAL_DAY: 'special-day'          // ימים מיוחדים אחרים
+    MAJOR_HOLIDAY: 'major-holiday',     // Major holiday (like Passover, Sukkot, Shavuot, Rosh Hashanah, Yom Kippur)
+    MINOR_HOLIDAY: 'minor-holiday',     // Minor holiday (like Chanukah, Purim, Tu BiShvat)
+    REMEMBRANCE: 'remembrance',         // Remembrance days (like Holocaust Remembrance Day, Memorial Day)
+    INDEPENDENCE: 'independence',       // Independence days (Independence Day)
+    CHOL_HAMOED: 'chol-hamoed',         // Intermediate days of festivals
+    SHABBAT: 'shabbat',                 // Shabbat
+    ROSH_CHODESH: 'rosh-chodesh',       // New Hebrew month
+    FAST_DAY: 'fast-day',               // Fast day
+    SPECIAL_DAY: 'special-day'          // Other special days
   };
   
-  // מידע על החגים והימים המיוחדים בלוח העברי
+  // Information about holidays and special days in the Hebrew calendar
   export const HOLIDAYS_INFO = {
-    // חגי תשרי
+    // Tishrei holidays
     'ראש השנה': {
       type: HOLIDAY_TYPES.MAJOR_HOLIDAY,
-      description: 'ראש השנה היהודי, היום הראשון בחודש תשרי'
+      description: 'Jewish New Year, first day of Tishrei'
     },
     'צום גדליה': {
       type: HOLIDAY_TYPES.FAST_DAY,
-      description: 'צום לזכר רצח גדליה בן אחיקם'
+      description: 'Fast for the murder of Gedaliah'
     },
     'יום כיפור': {
       type: HOLIDAY_TYPES.MAJOR_HOLIDAY,
-      description: 'יום הכיפורים, יום הצום והסליחה'
+      description: 'Day of Atonement, day of fasting and repentance'
     },
     'סוכות': {
       type: HOLIDAY_TYPES.MAJOR_HOLIDAY,
-      description: 'חג הסוכות'
+      description: 'Feast of Tabernacles'
     },
     'חול המועד סוכות': {
       type: HOLIDAY_TYPES.CHOL_HAMOED,
-      description: 'ימי חול המועד של חג הסוכות'
+      description: 'Intermediate days of Sukkot'
     },
     'הושענא רבה': {
       type: HOLIDAY_TYPES.SPECIAL_DAY,
-      description: 'היום השביעי של חג הסוכות'
+      description: 'Seventh day of Sukkot'
     },
     'שמיני עצרת': {
       type: HOLIDAY_TYPES.MAJOR_HOLIDAY,
-      description: 'היום השמיני של חג הסוכות'
+      description: 'Eighth day of Sukkot'
     },
     'שמחת תורה': {
       type: HOLIDAY_TYPES.MAJOR_HOLIDAY,
-      description: 'חג שמחת תורה'
+      description: 'Simchat Torah'
     },
     
-    // חגי כסלו-טבת
+    // Kislev-Tevet holidays
     'חנוכה': {
       type: HOLIDAY_TYPES.MINOR_HOLIDAY,
-      description: 'חג החנוכה, חג האורים'
+      description: 'Festival of Lights'
     },
     
-    // חגי שבט-אדר
+    // Shevat-Adar holidays
     'ט״ו בשבט': {
       type: HOLIDAY_TYPES.MINOR_HOLIDAY,
-      description: 'ראש השנה לאילנות'
+      description: 'New Year for Trees'
     },
     'פורים': {
       type: HOLIDAY_TYPES.MINOR_HOLIDAY,
-      description: 'חג הפורים'
+      description: 'Purim'
     },
     'שושן פורים': {
       type: HOLIDAY_TYPES.MINOR_HOLIDAY,
-      description: 'פורים בערים המוקפות חומה מימות יהושע בן-נון'
+      description: 'Purim celebrated in walled cities from Joshua\'s time'
     },
     
-    // חגי ניסן-אייר
+    // Nisan-Iyar holidays
     'פסח': {
       type: HOLIDAY_TYPES.MAJOR_HOLIDAY,
-      description: 'חג הפסח'
+      description: 'Passover'
     },
     'חול המועד פסח': {
       type: HOLIDAY_TYPES.CHOL_HAMOED,
-      description: 'ימי חול המועד של חג הפסח'
+      description: 'Intermediate days of Passover'
     },
     'שביעי של פסח': {
       type: HOLIDAY_TYPES.MAJOR_HOLIDAY,
-      description: 'היום השביעי והאחרון של חג הפסח'
+      description: 'Seventh and final day of Passover'
     },
     'יום השואה': {
       type: HOLIDAY_TYPES.REMEMBRANCE,
-      description: 'יום הזיכרון לשואה ולגבורה'
+      description: 'Holocaust Remembrance Day'
     },
     'יום הזיכרון': {
       type: HOLIDAY_TYPES.REMEMBRANCE,
-      description: 'יום הזיכרון לחללי מערכות ישראל ונפגעי פעולות האיבה'
+      description: 'Memorial Day for Fallen Soldiers and Victims of Terrorism'
     },
     'יום העצמאות': {
       type: HOLIDAY_TYPES.INDEPENDENCE,
-      description: 'יום העצמאות של מדינת ישראל'
+      description: 'Israel Independence Day'
     },
     'ל״ג בעומר': {
       type: HOLIDAY_TYPES.MINOR_HOLIDAY,
-      description: 'ל"ג בעומר, היום ה-33 בספירת העומר'
+      description: 'Lag BaOmer, 33rd day of the Omer count'
     },
     
-    // חגי סיוון
+    // Sivan holidays
     'שבועות': {
       type: HOLIDAY_TYPES.MAJOR_HOLIDAY,
-      description: 'חג השבועות, חג מתן תורה'
+      description: 'Shavuot, Festival of Weeks'
     },
     
-    // חגי תמוז-אב
+    // Tammuz-Av holidays
     'צום י״ז בתמוז': {
       type: HOLIDAY_TYPES.FAST_DAY,
-      description: 'תחילת שלושת השבועות, זכר לפריצת חומות ירושלים'
+      description: 'Beginning of Three Weeks, commemorating the breach of Jerusalem\'s walls'
     },
     'תשעה באב': {
       type: HOLIDAY_TYPES.FAST_DAY,
-      description: 'יום צום וזיכרון לחורבן בית המקדש'
+      description: 'Fast day commemorating the destruction of the Temples'
     },
     'ט״ו באב': {
       type: HOLIDAY_TYPES.MINOR_HOLIDAY,
-      description: 'חג האהבה העברי'
+      description: 'Hebrew love festival'
     },
     
-    // ימים קבועים אחרים
+    // Other recurring days
     'שבת': {
       type: HOLIDAY_TYPES.SHABBAT,
-      description: 'יום השבת השבועי'
+      description: 'Weekly Shabbat'
     },
     'ראש חודש': {
       type: HOLIDAY_TYPES.ROSH_CHODESH,
-      description: 'ראש החודש העברי'
+      description: 'New Hebrew month'
     }
   };
   
   /**
-   * פונקציה שמחזירה את סוג החג לפי שמו
-   * @param {string} holidayName - שם החג
-   * @returns {string} - סוג החג או 'special-day' כברירת מחדל
+   * Function that returns the holiday type by name
+   * @param {string} holidayName - Name of holiday
+   * @returns {string} - Holiday type or 'special-day' as default
    */
   export const getHolidayType = (holidayName) => {
     if (!holidayName) return null;
     
-    // בדיקה ישירה בטבלת החגים
+    // Direct lookup in holidays table
     const exactMatch = HOLIDAYS_INFO[holidayName];
     if (exactMatch) return exactMatch.type;
     
-    // חיפוש חלקי אם אין התאמה מדויקת
+    // Partial match if no exact match
     for (const [name, info] of Object.entries(HOLIDAYS_INFO)) {
       if (holidayName.includes(name)) {
         return info.type;
       }
     }
     
-    // חיפוש ספציפי עבור חול המועד
+    // Specific lookup for Chol HaMoed
     if (holidayName.includes('חול המועד')) {
       return HOLIDAY_TYPES.CHOL_HAMOED;
     }
