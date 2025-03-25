@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useHebrewDate } from "../hooks/useHebrewDate";
 import "../index.css";
 import { HebrewDateDisplay } from "./HebrewDateDisplay";
-import { DateInput } from "./date-fields";
 import { Header } from "./Header";
+import { DateInput } from "./date-fields/DateInput";
 
 const HebrewDateConverter = () => {
   // State for device detection

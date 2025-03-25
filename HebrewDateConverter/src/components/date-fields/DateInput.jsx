@@ -1,9 +1,9 @@
 import { YearInput } from "./YearInput";
 import { MonthSelect } from "./MonthSelect";
 import { DaySelect } from "./DaySelect";
-import { CalendarButton } from "../buttons";
 import { ErrorMessage } from "../ErrorMessage";
 import { useDateFields } from "../../hooks/useDateFields";
+import { CalendarButton } from "../buttons/CalendarButton";
 
 export const DateInput = ({ value, onChange, error: externalError }) => {
   // Use custom hook to manage date fields
