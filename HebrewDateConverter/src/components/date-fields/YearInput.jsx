@@ -1,13 +1,4 @@
-import React from 'react';
-
-/**
- * קומפוננטת קלט לשדה שנה
- * 
- * @param {string} value - ערך השנה
- * @param {function} onChange - פונקציה שתקרא כאשר השנה משתנה
- * @returns {JSX.Element} - רכיב React לקלט שנה
- */
-const YearInput = ({ value, onChange }) => {
+export const YearInput = ({ value, onChange }) => {
   return (
     <div className="w-full sm:w-1/3 relative">
       <label className="block text-indigo-600 text-sm font-medium mb-1">
@@ -26,5 +17,3 @@ const YearInput = ({ value, onChange }) => {
     </div>
   );
 };
-
-export default YearInput;

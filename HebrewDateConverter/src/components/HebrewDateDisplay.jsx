@@ -1,86 +1,66 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import DateHeader from './DateHeader';
-import LoadingIndicator from './LoadingIndicator';
-import useAnimation from '../hooks/useAnimation';
-import useCopyToClipboard from '../hooks/useCopyToClipboard';
+// components/HebrewDateDisplay.jsx
+import React, { useState, useCallback, useMemo } from 'react';
+import { DateHeader } from './DateHeader';
+import { LoadingIndicator } from './LoadingIndicator';
+import { useCopyToClipboard } from '../hooks/useCopyToClipboard';
+import { useAnimation } from '../hooks/useAnimation';
 import { formatGregorianDate } from '../utils/dateUtils';
 import { HOLIDAY_TYPES } from '../constants/hebrewDates';
 
-/**
- * קומפוננטה משופרת להצגת תאריך עברי עם תמיכה משופרת בחגים ומולטיפלטפורמה
- * 
- * @param {object} props - פרופס של הקומפוננטה
- * @param {string} props.hebrewDate - מחרוזת התאריך העברי
- * @param {string} props.dayOfWeek - יום בשבוע בעברית
- * @param {string|Object} props.note - מידע על חג (מחרוזת או אובייקט)
- * @param {boolean} props.loading - האם התאריך נטען
- * @param {string} props.gregorianDate - מחרוזת התאריך הלועזי (YYYY-MM-DD)
- * @param {boolean} props.isMobile - האם המכשיר הוא נייד
- * @returns {JSX.Element|null} - קומפוננטת React להצגת תאריך עברי
- */
-const HebrewDateDisplay = (props) => {
-  // חילוץ פרופס
-  const { hebrewDate, dayOfWeek, note, loading, gregorianDate, isMobile } = props;
-  
-  // סטייט עבור הרחבה/צמצום
+export const HebrewDateDisplay = ({ 
+  hebrewDate, 
+  dayOfWeek, 
+  note, 
+  loading, 
+  gregorianDate, 
+  isMobile 
+}) => {
+  // State for card expansion
   const [dateExpanded, setDateExpanded] = useState(false);
   
-  // הוקים מותאמים
+  // Custom hooks
   const isAnimating = useAnimation(700, hebrewDate);
   const [copied, copyToClipboard] = useCopyToClipboard(2000);
   
-  // רישום לוגים לצורך דיבאג
-  useEffect(() => {
-    console.log('HebrewDateDisplay props:', { 
-      hebrewDate, 
-      dayOfWeek, 
-      note,
-      loading, 
-      gregorianDate 
-    });
-  }, [hebrewDate, dayOfWeek, note, loading, gregorianDate]);
-  
-  // עיבוד מידע על חג - טיפול בפורמטים של מחרוזת ואובייקט
+  // Process holiday info
   const holidayInfo = useMemo(() => {
     if (!note) return null;
     
-    console.log('Processing holiday note:', note);
-    
-    // אם המידע כבר במבנה אובייקט עם שדה סוג, השתמש בו ישירות
+    // If info is already in object format with type, use it directly
     if (typeof note === 'object' && note.name && note.type) {
       return note;
     }
     
-    // אם זו מחרוזת, צור אובייקט פשוט עם סוג ברירת מחדל
+    // If string, create simple object with default type
     if (typeof note === 'string' && note.trim() !== '') {
       return {
         name: note,
-        type: HOLIDAY_TYPES.SPECIAL_DAY // סוג ברירת מחדל
+        type: HOLIDAY_TYPES.SPECIAL_DAY // Default type
       };
     }
     
     return null;
   }, [note]);
   
-  // פורמט תאריך לועזי להצגה
+  // Format Gregorian date for display
   const formattedGregorianDate = useMemo(() => {
     return formatGregorianDate(gregorianDate);
   }, [gregorianDate]);
   
-  // החלפת מצב הרחבה/צמצום
+  // Toggle expanded state
   const toggleExpanded = useCallback((e) => {
     e.stopPropagation();
     setDateExpanded(prev => !prev);
   }, []);
   
-  // טיפול בהעתקה ללוח
+  // Handle copy to clipboard
   const handleCopy = useCallback((e) => {
     e.stopPropagation();
     
-    // יצירת הטקסט להעתקה בהתבסס על המידע הזמין
+    // Create text to copy based on available info
     let textToCopy = `${dayOfWeek}, ${hebrewDate}`;
     
-    // הוספת מידע על חג אם זמין
+    // Add holiday info if available
     if (holidayInfo && holidayInfo.name) {
       textToCopy += ` (${holidayInfo.name})`;
     }
@@ -88,22 +68,22 @@ const HebrewDateDisplay = (props) => {
     copyToClipboard(textToCopy);
   }, [dayOfWeek, hebrewDate, holidayInfo, copyToClipboard]);
   
-  // הצגת מחוון טעינה כאשר טוען
+  // Display loading indicator when loading
   if (loading) {
     return <LoadingIndicator />;
   }
   
-  // אל תרנדר כלום אם אין תאריך
+  // Don't render anything if no date
   if (!hebrewDate) {
     return null;
   }
   
-  // חישוב מחלקות CSS עבור אנימציה
+  // Calculate CSS classes for animation
   const cardClasses = `bg-white rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl cursor-pointer
     ${dateExpanded ? 'ring-2 ring-indigo-300' : ''} 
     ${isAnimating ? 'scale-102 sm:scale-105' : ''}`;
   
-  // קבלת מחלקות CSS עבור תגית החג בהתאם לסוג
+  // Get CSS classes for holiday tag based on type
   const getHolidayTagClasses = () => {
     if (!holidayInfo) return '';
     
@@ -134,17 +114,17 @@ const HebrewDateDisplay = (props) => {
       className={cardClasses}
       onClick={() => setDateExpanded(!dateExpanded)}
     >
-      {/* כותרת כרטיס */}
+      {/* Card header */}
       <DateHeader dayOfWeek={dayOfWeek} />
       
-      {/* תוכן כרטיס */}
+      {/* Card content */}
       <div className="p-4 sm:p-6">
-        {/* תאריך עברי */}
+        {/* Hebrew date */}
         <div className="text-2xl sm:text-3xl font-bold text-center mb-3 sm:mb-4 text-indigo-900 leading-tight">
           {hebrewDate}
         </div>
         
-        {/* תגית חג - עם בדיקה מקיפה */}
+        {/* Holiday tag */}
         {holidayInfo && holidayInfo.name && (
           <div className="flex justify-center mb-3 sm:mb-4">
             <span className={`${getHolidayTagClasses()} text-sm font-medium px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-center break-words max-w-full`}>
@@ -153,7 +133,7 @@ const HebrewDateDisplay = (props) => {
           </div>
         )}
         
-        {/* תוכן מורחב */}
+        {/* Expanded content */}
         <div className={`mt-3 sm:mt-4 overflow-hidden transition-all duration-300 ${
           dateExpanded ? 'max-h-36 opacity-100' : 'max-h-0 opacity-0'
         }`}>
@@ -174,7 +154,7 @@ const HebrewDateDisplay = (props) => {
           </div>
         </div>
         
-        {/* כפתורי פעולה */}
+        {/* Action buttons */}
         <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
           <div className="w-full sm:w-auto">
             <button
@@ -226,5 +206,3 @@ const HebrewDateDisplay = (props) => {
     </div>
   );
 };
-
-export default HebrewDateDisplay;

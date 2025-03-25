@@ -1,15 +1,7 @@
-import React from 'react';
-import { getHebrewMonthNames } from '../../utils/dateUtils';
+import { getHebrewMonthNames } from '../utils/dateUtils';
 
-/**
- * קומפוננטת בחירת חודש
- * 
- * @param {string} value - ערך החודש הנוכחי
- * @param {function} onChange - פונקציה שתקרא כאשר החודש משתנה
- * @returns {JSX.Element} - רכיב React לבחירת חודש
- */
-const MonthSelect = ({ value, onChange }) => {
-  // שמות החודשים בעברית
+export const MonthSelect = ({ value, onChange }) => {
+  // Hebrew month names
   const hebrewMonthNames = getHebrewMonthNames();
   
   return (
@@ -31,7 +23,7 @@ const MonthSelect = ({ value, onChange }) => {
           ))}
         </select>
         
-        {/* חץ מטה בשדה בחירה - בצד שמאל עבור RTL */}
+        {/* Down arrow for select - on left side for RTL */}
         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-indigo-500">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
@@ -41,5 +33,3 @@ const MonthSelect = ({ value, onChange }) => {
     </div>
   );
 };
-
-export default MonthSelect;

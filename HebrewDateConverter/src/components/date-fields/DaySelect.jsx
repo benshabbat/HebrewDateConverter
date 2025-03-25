@@ -1,17 +1,8 @@
 import React, { useMemo } from 'react';
-import { calculateDayOptions } from '../../utils/dateUtils';
+import { calculateDayOptions } from '../utils/dateUtils';
 
-/**
- * קומפוננטת בחירת יום
- * 
- * @param {string} value - ערך היום הנוכחי
- * @param {string} month - ערך החודש הנוכחי
- * @param {string} year - ערך השנה הנוכחית
- * @param {function} onChange - פונקציה שתקרא כאשר היום משתנה
- * @returns {JSX.Element} - רכיב React לבחירת יום
- */
-const DaySelect = ({ value, month, year, onChange }) => {
-  // חישוב אופציות הימים - תלוי בחודש ובשנה
+export const DaySelect = ({ value, month, year, onChange }) => {
+  // Calculate day options - depends on month and year
   const dayOptions = useMemo(() => {
     return calculateDayOptions(year, month);
   }, [year, month]);
@@ -38,7 +29,7 @@ const DaySelect = ({ value, month, year, onChange }) => {
           })}
         </select>
         
-        {/* חץ מטה בשדה בחירה - בצד שמאל עבור RTL */}
+        {/* Down arrow for select - on left side for RTL */}
         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-indigo-500">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
@@ -48,5 +39,3 @@ const DaySelect = ({ value, month, year, onChange }) => {
     </div>
   );
 };
-
-export default DaySelect;
