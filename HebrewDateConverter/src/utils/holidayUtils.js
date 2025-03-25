@@ -1,15 +1,20 @@
 // src/utils/holidayUtils.js
-import { HOLIDAY_TYPES } from '../constants/hebrewDates';
+import { HOLIDAY_TYPES, HOLIDAYS_INFO, getHolidayType } from '../constants/hebrewDates';
 
 /**
- * Improved function to detect Jewish holidays and special dates
- * @param {Date} date - The date to check
- * @returns {Object|null} - An object with holiday information or null if none
+ * פונקציה משופרת לזיהוי חגים יהודיים ותאריכים מיוחדים
+ * @param {Date} date - התאריך לבדיקה
+ * @returns {Object|null} - אובייקט עם מידע על החג או null אם אין
  */
 export const getHolidayInfo = (date) => {
   try {
-    // Get Hebrew date components using Intl API
-    const formatter = new Intl.DateTimeFormat(['he-IL'], {
+    if (!date || isNaN(date.getTime())) {
+      console.error('תאריך לא תקין:', date);
+      return null;
+    }
+
+    // קבלת רכיבי התאריך העברי באמצעות Intl API
+    const formatter = new Intl.DateTimeFormat('he-IL', {
       calendar: 'hebrew',
       day: 'numeric',
       month: 'numeric',
@@ -17,54 +22,36 @@ export const getHolidayInfo = (date) => {
     });
     
     const parts = formatter.formatToParts(date);
-    const hebrewMonth = parseInt(parts.find(part => part.type === 'month')?.value || '0', 10);
+    
+    // הדפסה לצורכי ניפוי באגים
+    console.log('Hebrew date parts:', parts);
+    
     const hebrewDay = parseInt(parts.find(part => part.type === 'day')?.value || '0', 10);
+    const hebrewMonth = parseInt(parts.find(part => part.type === 'month')?.value || '0', 10);
     const hebrewYear = parseInt(parts.find(part => part.type === 'year')?.value || '0', 10);
     
-    // Log for debugging
-    console.log('Hebrew date parts:', { hebrewMonth, hebrewDay, hebrewYear });
+    // שבת
+    if (date.getDay() === 6) {
+      return {
+        name: 'שבת',
+        type: HOLIDAY_TYPES.SHABBAT
+      };
+    }
     
-    // Check for Rosh Chodesh (first day of Hebrew month)
-    if (hebrewDay === 1 && hebrewMonth !== 7) { // Exclude Rosh Hashanah
+    // ראש חודש
+    if (hebrewDay === 1 && hebrewMonth !== 7) { // לא כולל ראש השנה
       return {
         name: `ראש חודש ${getHebrewMonthName(hebrewMonth)}`,
         type: HOLIDAY_TYPES.ROSH_CHODESH
       };
     }
     
-    // Second day of Rosh Chodesh (last day of previous month)
-    if (hebrewDay === 30) {
-      return {
-        name: `ראש חודש ${getHebrewMonthName(hebrewMonth + 1 > 12 ? 1 : hebrewMonth + 1)}`,
-        type: HOLIDAY_TYPES.ROSH_CHODESH
-      };
-    }
-    
-    // Check if it's Shabbat
-    if (date.getDay() === 6) {
-      // Get the name of the Parasha (Torah portion) for this Shabbat
-      const parashaName = getParashaName(date);
-      return {
-        name: parashaName ? `שבת ${parashaName}` : 'שבת',
-        type: HOLIDAY_TYPES.SHABBAT
-      };
-    }
-    
-    // Major Jewish holidays
-    
-    // Tishrei Holidays (Month 7)
+    // חגי תשרי (חודש 7)
     if (hebrewMonth === 7) {
       if (hebrewDay === 1 || hebrewDay === 2) {
         return {
           name: 'ראש השנה',
           type: HOLIDAY_TYPES.MAJOR_HOLIDAY
-        };
-      }
-      
-      if (hebrewDay === 3 && date.getDay() !== 6) {
-        return {
-          name: 'צום גדליה',
-          type: HOLIDAY_TYPES.FAST_DAY
         };
       }
       
@@ -102,43 +89,17 @@ export const getHolidayInfo = (date) => {
           type: HOLIDAY_TYPES.MAJOR_HOLIDAY
         };
       }
-      
-      if (hebrewDay === 23 && isInIsrael() === false) {
-        return {
-          name: 'שמחת תורה',
-          type: HOLIDAY_TYPES.MAJOR_HOLIDAY
-        };
-      }
     }
     
-    // Kislev-Tevet Holidays (Month 9-10)
-    if ((hebrewMonth === 9 && hebrewDay >= 25) || (hebrewMonth === 10 && hebrewDay <= 2) || 
-        (hebrewMonth === 10 && hebrewDay === 3 && isInIsrael() === false)) {
-      // Calculate which day of Chanukah
-      let chanukahDay = 0;
-      
-      if (hebrewMonth === 9) {
-        chanukahDay = hebrewDay - 24;
-      } else { // hebrewMonth === 10
-        const daysInKislev = getDaysInHebrewMonth(hebrewYear, 9);
-        chanukahDay = daysInKislev - 24 + hebrewDay;
-      }
-      
+    // חנוכה
+    if ((hebrewMonth === 9 && hebrewDay >= 25) || (hebrewMonth === 10 && hebrewDay <= 2)) {
       return {
-        name: `חנוכה (נר ${chanukahDay})`,
+        name: 'חנוכה',
         type: HOLIDAY_TYPES.MINOR_HOLIDAY
       };
     }
     
-    // 10th of Tevet fast
-    if (hebrewMonth === 10 && hebrewDay === 10) {
-      return {
-        name: 'צום עשרה בטבת',
-        type: HOLIDAY_TYPES.FAST_DAY
-      };
-    }
-    
-    // Tu B'Shvat
+    // ט"ו בשבט
     if (hebrewMonth === 11 && hebrewDay === 15) {
       return {
         name: 'ט״ו בשבט',
@@ -146,51 +107,31 @@ export const getHolidayInfo = (date) => {
       };
     }
     
-    // Purim and related days
-    if (hebrewMonth === 12 || (hebrewMonth === 13 && isHebrewLeapYear(hebrewYear))) {
-      const purimMonth = isHebrewLeapYear(hebrewYear) ? 13 : 12;
-      
-      if (hebrewMonth === purimMonth) {
-        if (hebrewDay === 13) {
-          return {
-            name: 'תענית אסתר',
-            type: HOLIDAY_TYPES.FAST_DAY
-          };
-        }
-        
-        if (hebrewDay === 14) {
-          return {
-            name: 'פורים',
-            type: HOLIDAY_TYPES.MINOR_HOLIDAY
-          };
-        }
-        
-        if (hebrewDay === 15) {
-          return {
-            name: 'שושן פורים',
-            type: HOLIDAY_TYPES.MINOR_HOLIDAY
-          };
-        }
-      }
+    // פורים
+    if (hebrewMonth === 12 && hebrewDay === 14) {
+      return {
+        name: 'פורים',
+        type: HOLIDAY_TYPES.MINOR_HOLIDAY
+      };
     }
     
-    // Pesach and counting the Omer
+    // פסח וימי העומר
     if (hebrewMonth === 1) {
-      if (hebrewDay === 15 || (hebrewDay === 16 && isInIsrael() === false)) {
+      if (hebrewDay === 15) {
         return {
           name: 'פסח',
           type: HOLIDAY_TYPES.MAJOR_HOLIDAY
         };
       }
       
-      if ((hebrewDay >= 16 && hebrewDay <= 20) || (isInIsrael() === false && hebrewDay >= 17 && hebrewDay <= 20)) {
+      if (hebrewDay >= 16 && hebrewDay <= 20) {
         return {
           name: 'חול המועד פסח',
           type: HOLIDAY_TYPES.CHOL_HAMOED
         };
       }
       
-      if (hebrewDay === 21 || (hebrewDay === 22 && isInIsrael() === false)) {
+      if (hebrewDay === 21) {
         return {
           name: 'שביעי של פסח',
           type: HOLIDAY_TYPES.MAJOR_HOLIDAY
@@ -198,47 +139,23 @@ export const getHolidayInfo = (date) => {
       }
     }
     
-    // Counting the Omer (from 16 Nisan to the day before Shavuot)
-    if ((hebrewMonth === 1 && hebrewDay >= 16) || (hebrewMonth === 2) || (hebrewMonth === 3 && hebrewDay < 6)) {
-      // Calculate which day of the Omer
-      let omerDay = 0;
-      
-      if (hebrewMonth === 1) {
-        omerDay = hebrewDay - 15;
-      } else if (hebrewMonth === 2) {
-        const daysInNisan = getDaysInHebrewMonth(hebrewYear, 1);
-        omerDay = daysInNisan - 15 + hebrewDay;
-      } else { // hebrewMonth === 3
-        const daysInNisan = getDaysInHebrewMonth(hebrewYear, 1);
-        const daysInIyar = getDaysInHebrewMonth(hebrewYear, 2);
-        omerDay = daysInNisan - 15 + daysInIyar + hebrewDay;
-      }
-      
-      if (omerDay >= 1 && omerDay <= 49) {
-        // Specifically check for Lag BaOmer
-        if (omerDay === 33) {
-          return {
-            name: 'ל״ג בעומר',
-            type: HOLIDAY_TYPES.MINOR_HOLIDAY
-          };
-        }
-        
-        return {
-          name: `ספירת העומר - יום ${omerDay}`,
-          type: HOLIDAY_TYPES.SPECIAL_DAY
-        };
-      }
+    // ל"ג בעומר
+    if (hebrewMonth === 2 && hebrewDay === 18) {
+      return {
+        name: 'ל״ג בעומר',
+        type: HOLIDAY_TYPES.MINOR_HOLIDAY
+      };
     }
     
-    // Shavuot
-    if (hebrewMonth === 3 && (hebrewDay === 6 || (hebrewDay === 7 && isInIsrael() === false))) {
+    // שבועות
+    if (hebrewMonth === 3 && hebrewDay === 6) {
       return {
         name: 'שבועות',
         type: HOLIDAY_TYPES.MAJOR_HOLIDAY
       };
     }
     
-    // Tzom Tammuz and Tisha B'Av period
+    // צום י"ז בתמוז
     if (hebrewMonth === 4 && hebrewDay === 17) {
       return {
         name: 'צום י״ז בתמוז',
@@ -246,6 +163,7 @@ export const getHolidayInfo = (date) => {
       };
     }
     
+    // תשעה באב
     if (hebrewMonth === 5 && hebrewDay === 9) {
       return {
         name: 'תשעה באב',
@@ -253,59 +171,17 @@ export const getHolidayInfo = (date) => {
       };
     }
     
-    // Tu B'Av
-    if (hebrewMonth === 5 && hebrewDay === 15) {
-      return {
-        name: 'ט״ו באב',
-        type: HOLIDAY_TYPES.MINOR_HOLIDAY
-      };
-    }
-    
-    // Modern Israeli holidays (approximate dates - would need exact calculations)
-    
-    // Holocaust Remembrance Day (27 Nisan)
-    if (hebrewMonth === 1 && hebrewDay === 27) {
-      return {
-        name: 'יום הזיכרון לשואה ולגבורה',
-        type: HOLIDAY_TYPES.REMEMBRANCE
-      };
-    }
-    
-    // Memorial Day (4 Iyar)
-    if (hebrewMonth === 2 && hebrewDay === 4) {
-      return {
-        name: 'יום הזיכרון לחללי מערכות ישראל',
-        type: HOLIDAY_TYPES.REMEMBRANCE
-      };
-    }
-    
-    // Independence Day (5 Iyar)
-    if (hebrewMonth === 2 && hebrewDay === 5) {
-      return {
-        name: 'יום העצמאות',
-        type: HOLIDAY_TYPES.INDEPENDENCE
-      };
-    }
-    
-    // Jerusalem Day (28 Iyar)
-    if (hebrewMonth === 2 && hebrewDay === 28) {
-      return {
-        name: 'יום ירושלים',
-        type: HOLIDAY_TYPES.MINOR_HOLIDAY
-      };
-    }
-    
     return null;
   } catch (error) {
-    console.error('Error determining holiday:', error);
+    console.error('שגיאה בזיהוי חג:', error);
     return null;
   }
 };
 
 /**
- * Convert the holiday info object to a display string
- * @param {Object} holidayInfo - The holiday information object
- * @returns {string|null} - The holiday name as a string, or null if no holiday
+ * המרת אובייקט מידע על חג למחרוזת תצוגה
+ * @param {Object} holidayInfo - אובייקט מידע על החג
+ * @returns {string|null} - שם החג כמחרוזת, או null אם אין חג
  */
 export const getHolidayDisplayString = (holidayInfo) => {
   if (!holidayInfo) return null;
@@ -313,24 +189,13 @@ export const getHolidayDisplayString = (holidayInfo) => {
 };
 
 /**
- * Helper function to check if we should use Israeli holiday rules
- * This is a simplification - in a real app, you might want to allow users to choose
- * @returns {boolean} - True if Israeli holiday rules should be used
- */
-function isInIsrael() {
-  // For now, always return true for Israeli holiday rules
-  // In a production app, this could be a user setting
-  return true;
-}
-
-/**
- * Helper function to get Hebrew month name
- * @param {number} month - Hebrew month number (1-13)
- * @returns {string} - Hebrew month name
+ * פונקציית עזר לקבלת שם חודש עברי
+ * @param {number} month - מספר חודש עברי (1-13)
+ * @returns {string} - שם חודש עברי
  */
 function getHebrewMonthName(month) {
   const hebrewMonthNames = [
-    '',  // Empty for 1-based indexing
+    '',  // ריק עבור אינדוקס 1
     'ניסן',
     'אייר',
     'סיוון',
@@ -347,50 +212,4 @@ function getHebrewMonthName(month) {
   ];
   
   return hebrewMonthNames[month] || '';
-}
-
-/**
- * Helper function to check if a Hebrew year is a leap year
- * @param {number} year - Hebrew year
- * @returns {boolean} - True if it's a leap year
- */
-function isHebrewLeapYear(year) {
-  return (((7 * year) + 1) % 19) < 7;
-}
-
-/**
- * Helper function to get the number of days in a Hebrew month
- * This is a simplification - a full implementation would account for variations
- * @param {number} year - Hebrew year
- * @param {number} month - Hebrew month (1-13)
- * @returns {number} - Number of days in the month
- */
-function getDaysInHebrewMonth(year, month) {
-  // Simplified implementation - in reality, this would need to account for
-  // variations in month lengths based on the Hebrew calendar rules
-  if (month === 2 || month === 4 || month === 6 || month === 10 || month === 13) {
-    return 29;
-  } else if (month === 8) {
-    // Cheshvan can be 29 or 30 days
-    // Simplified approach - would need proper calculation based on year
-    return 30;
-  } else if (month === 9) {
-    // Kislev can be 29 or 30 days
-    // Simplified approach - would need proper calculation based on year
-    return 30;
-  } else {
-    return 30;
-  }
-}
-
-/**
- * Helper function to get the Parasha name for a given Shabbat
- * This is a placeholder - implementing this fully requires complex calculations
- * @param {Date} date - The date to check
- * @returns {string|null} - Name of the Parasha or null
- */
-function getParashaName(date) {
-  // This would need a full implementation with proper Parasha cycle calculations
-  // For now, return null to indicate a generic Shabbat
-  return null;
 }

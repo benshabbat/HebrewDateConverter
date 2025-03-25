@@ -7,18 +7,18 @@ import {
   convertToHebrewDate, 
   getHebrewDayOfWeek 
 } from './hebrewDateUtils';
-import { getHolidayInfo, getHolidayDisplayString } from '../utils/holidayUtils';
+import { getHolidayInfo } from '../utils/holidayUtils';
 
 /**
- * Main Hebrew Date Converter component with enhanced holiday support
+ * קומפוננטה ראשית של ממיר תאריכים עברי עם תמיכה משופרת במולטיפלטפורמה וחגים
  * 
- * @param {Object} props - Component props
- * @param {boolean} props.isMobile - Whether the app is running on a mobile device
- * @param {boolean} props.isIOS - Whether the app is running on iOS
- * @returns {JSX.Element} - The main component
+ * @param {Object} props - פרופס של הקומפוננטה
+ * @param {boolean} props.isMobile - האם האפליקציה רצה על מכשיר נייד
+ * @param {boolean} props.isIOS - האם האפליקציה רצה על מכשיר iOS
+ * @returns {JSX.Element} - הקומפוננטה הראשית
  */
 const HebrewDateConverter = ({ isMobile, isIOS }) => {
-  // State management
+  // ניהול סטייט
   const [gregorianDate, setGregorianDate] = useState('');
   const [hebrewDate, setHebrewDate] = useState('');
   const [dayOfWeek, setDayOfWeek] = useState('');
@@ -26,73 +26,127 @@ const HebrewDateConverter = ({ isMobile, isIOS }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [animateHeader, setAnimateHeader] = useState(false);
+  const [deviceInfo, setDeviceInfo] = useState({
+    isMobile: isMobile || false,
+    isIOS: isIOS || false,
+    isOnline: true,
+    userAgent: ''
+  });
   
-  // Refs for timers
+  // רפים לטיימרים
   const loadingTimerRef = useRef(null);
   const headerAnimationTimerRef = useRef(null);
   const conversionDelayTimerRef = useRef(null);
 
-  // Initialize with current date
+  // אתחול עם התאריך הנוכחי וזיהוי מכשיר
   useEffect(() => {
+    // קבלת התאריך הנוכחי
     const today = new Date();
     setGregorianDate(formatDate(today));
     
-    // Short animation for header
+    // זיהוי סוגי מכשירים נוספים
+    const detectDeviceInfo = () => {
+      const userAgent = navigator.userAgent.toLowerCase();
+      
+      // זיהוי מכשיר נייד
+      const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+      
+      // זיהוי סוג מערכת הפעלה
+      const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
+      const isAndroidDevice = /android/.test(userAgent);
+      const isWindowsDevice = /windows/.test(userAgent);
+      
+      // זיהוי דפדפן
+      const isChrome = /chrome/.test(userAgent) && !/edg/.test(userAgent);
+      const isSafari = /safari/.test(userAgent) && !/chrome/.test(userAgent);
+      const isFirefox = /firefox/.test(userAgent);
+      const isEdge = /edg/.test(userAgent);
+      
+      // זיהוי מצב מקוון
+      const isOnline = navigator.onLine;
+      
+      setDeviceInfo({
+        isMobile: isMobileDevice,
+        isIOS: isIOSDevice,
+        isAndroid: isAndroidDevice,
+        isWindows: isWindowsDevice,
+        isChrome,
+        isSafari,
+        isFirefox,
+        isEdge,
+        isOnline,
+        userAgent
+      });
+    };
+    
+    detectDeviceInfo();
+    
+    // האזנה לשינויים במצב מקוון
+    const handleOnlineStatusChange = () => {
+      setDeviceInfo(prev => ({
+        ...prev,
+        isOnline: navigator.onLine
+      }));
+    };
+    
+    window.addEventListener('online', handleOnlineStatusChange);
+    window.addEventListener('offline', handleOnlineStatusChange);
+    
+    // אנימציה קצרה לכותרת
     setAnimateHeader(true);
     
     headerAnimationTimerRef.current = setTimeout(() => {
       setAnimateHeader(false);
-      headerAnimationTimerRef.current = null;
     }, 1000);
     
-    // Cleanup timers on unmount
+    // ניקוי טיימרים בסיום
     return () => {
+      window.removeEventListener('online', handleOnlineStatusChange);
+      window.removeEventListener('offline', handleOnlineStatusChange);
+      
       if (headerAnimationTimerRef.current) {
         clearTimeout(headerAnimationTimerRef.current);
-        headerAnimationTimerRef.current = null;
       }
       
       if (loadingTimerRef.current) {
         clearTimeout(loadingTimerRef.current);
-        loadingTimerRef.current = null;
       }
       
       if (conversionDelayTimerRef.current) {
         clearTimeout(conversionDelayTimerRef.current);
-        conversionDelayTimerRef.current = null;
       }
     };
   }, []);
 
-  // Convert date when it changes
+  // המרת תאריך כאשר הוא משתנה
   useEffect(() => {
     if (gregorianDate) {
-      // Debounce conversion for smoother UX
+      // השהיית המרה לחוויית משתמש חלקה יותר
       if (conversionDelayTimerRef.current) {
         clearTimeout(conversionDelayTimerRef.current);
       }
       
       conversionDelayTimerRef.current = setTimeout(() => {
         convertDate();
-        conversionDelayTimerRef.current = null;
-      }, isMobile ? 200 : 100); // Longer delay on mobile
+      }, deviceInfo.isMobile ? 200 : 100); // השהייה ארוכה יותר במובייל
     }
-  }, [gregorianDate, isMobile]);
+  }, [gregorianDate, deviceInfo.isMobile]);
 
   /**
-   * Convert Gregorian date to Hebrew date
+   * המרת תאריך לועזי לתאריך עברי
    */
   const convertDate = useCallback(() => {
     if (!gregorianDate) return;
     
     setLoading(true);
+    console.log('Converting date:', gregorianDate);
     
-    // Clear previous timer if exists
+    // ניקוי טיימר קודם אם קיים
     if (loadingTimerRef.current) {
       clearTimeout(loadingTimerRef.current);
     }
     
-    // Add a slight delay for loading indicator
+    // הוספת השהייה קלה עבור מחוון טעינה
     loadingTimerRef.current = setTimeout(() => {
       try {
         const date = new Date(gregorianDate);
@@ -100,41 +154,39 @@ const HebrewDateConverter = ({ isMobile, isIOS }) => {
         if (isNaN(date.getTime())) {
           setError('התאריך שהוזן אינו תקין');
           setLoading(false);
-          loadingTimerRef.current = null;
           return;
         }
 
-        // Convert to Hebrew date
+        // המרה לתאריך עברי
         const hebrewDateResult = convertToHebrewDate(date);
         setHebrewDate(hebrewDateResult);
         
-        // Get day of week
+        // קבלת יום בשבוע
         setDayOfWeek(getHebrewDayOfWeek(date));
         
-        // Check for holidays using the enhanced holiday detection
+        // בדיקת חגים באמצעות זיהוי חגים משופר
         const holiday = getHolidayInfo(date);
+        console.log('Holiday info result:', holiday);
         setHolidayInfo(holiday);
         
         setError('');
         setLoading(false);
-        loadingTimerRef.current = null;
       } catch (error) {
-        console.error('Error converting date:', error);
+        console.error('שגיאה בהמרת התאריך:', error);
         setError('אירעה שגיאה בהמרת התאריך');
         setLoading(false);
-        loadingTimerRef.current = null;
       }
-    }, isMobile ? 300 : 200);
-  }, [gregorianDate, isMobile]);
+    }, deviceInfo.isMobile ? 300 : 200);
+  }, [gregorianDate, deviceInfo.isMobile]);
 
   /**
-   * Handle date change
+   * טיפול בשינוי תאריך
    */
   const handleDateChange = useCallback((e) => {
     const newDate = e.target.value;
     
     if (newDate) {
-      // Validate date
+      // וידוא תקינות התאריך
       const [yearStr] = newDate.split('-');
       const year = parseInt(yearStr);
       
@@ -148,23 +200,41 @@ const HebrewDateConverter = ({ isMobile, isIOS }) => {
     setGregorianDate(newDate);
   }, []);
   
-  // Header classes for animation
+  // מחלקות כותרת עבור אנימציה
   const headerClasses = useMemo(() => `flex justify-between items-center mb-6 pb-4 border-b border-indigo-200 transition-all duration-300 ${
     animateHeader ? 'transform -translate-y-1' : ''
   }`, [animateHeader]);
 
-  // Current year for footer
+  // שנה נוכחית לפוטר
   const currentYear = useMemo(() => new Date().getFullYear(), []);
   
-  // Responsive padding
-  const containerPadding = isMobile ? 'p-4' : 'p-6';
+  // ריפוד רספונסיבי
+  const containerPadding = deviceInfo.isMobile ? 'p-4' : 'p-6';
+  
+  // מחוון מצב לא מקוון
+  const OfflineIndicator = useMemo(() => {
+    if (deviceInfo.isOnline) return null;
+    
+    return (
+      <div className="bg-yellow-500 text-white text-center py-2 px-4 rounded-lg mb-4">
+        <p className="text-sm font-medium">אתה במצב לא מקוון</p>
+        <p className="text-xs">התאריכים עדיין פעילים, אך חלק מהנתונים עשויים לא להיות זמינים</p>
+      </div>
+    );
+  }, [deviceInfo.isOnline]);
 
   return (
-    <div className={`max-w-lg mx-auto ${containerPadding} bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl shadow-xl text-right`} dir="rtl">
-      {/* Header */}
+    <div 
+      className={`max-w-lg mx-auto ${containerPadding} bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl shadow-xl text-right`} 
+      dir="rtl"
+    >
+      {/* מחוון מצב לא מקוון */}
+      {OfflineIndicator}
+      
+      {/* כותרת */}
       <div className={headerClasses}>
         <h1 className="text-2xl sm:text-3xl font-bold text-indigo-800 flex items-center">
-          {/* Calendar icon */}
+          {/* אייקון לוח שנה */}
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-8 sm:w-8 ml-1 sm:ml-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
@@ -172,27 +242,38 @@ const HebrewDateConverter = ({ isMobile, isIOS }) => {
         </h1>
         
         <div className="text-xs text-indigo-400 bg-white bg-opacity-50 rounded-full px-3 py-1">
-          גרסה 2.1
+          גרסה 2.2
         </div>
       </div>
       
-      {/* Date input */}
+      {/* קלט תאריך */}
       <DateInput 
         value={gregorianDate} 
         onChange={handleDateChange} 
         error={error}
       />
       
-      {/* Hebrew date display - passing the full holiday info object */}
+      {/* תצוגת תאריך עברי - העברת אובייקט מידע על חג מלא */}
       <HebrewDateDisplay 
         hebrewDate={hebrewDate}
         dayOfWeek={dayOfWeek}
-        note={holidayInfo}  // Pass the complete holiday info object
+        note={holidayInfo}  // העברת אובייקט מידע על חג מלא
         loading={loading}
         gregorianDate={gregorianDate}
+        isMobile={deviceInfo.isMobile}
       />
       
-      {/* Footer */}
+      {/* מידע על המכשיר - רק לצורך דיבאג */}
+      {deviceInfo.isOnline && process.env.NODE_ENV === 'development' && (
+        <div className="mt-6 p-2 bg-gray-100 rounded-lg text-xs text-gray-500">
+          <p><strong>מידע מכשיר:</strong> {deviceInfo.isMobile ? 'נייד' : 'מחשב'}, 
+            {deviceInfo.isIOS ? ' iOS' : deviceInfo.isAndroid ? ' Android' : deviceInfo.isWindows ? ' Windows' : ''}, 
+            {deviceInfo.isChrome ? ' Chrome' : deviceInfo.isSafari ? ' Safari' : deviceInfo.isFirefox ? ' Firefox' : deviceInfo.isEdge ? ' Edge' : ''}
+          </p>
+        </div>
+      )}
+      
+      {/* פוטר */}
       <div className="mt-6 text-center text-indigo-400 text-xs">
         <p>פותח ע"י דוד-חן בן שבת • {currentYear}</p>
       </div>
