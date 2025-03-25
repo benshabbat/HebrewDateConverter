@@ -1,6 +1,6 @@
 // src/components/index.jsx
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import DateInput from './DateInput';
+import DateInput from './date-fields/DateInput';
 import HebrewDateDisplay from './HebrewDateDisplay';
 import { 
   formatDate, 

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { calculateDayOptions } from '../utils/dateUtils';
+import { calculateDayOptions } from '../../utils/dateUtils';
 
 /**
  * קומפוננטת בחירת יום

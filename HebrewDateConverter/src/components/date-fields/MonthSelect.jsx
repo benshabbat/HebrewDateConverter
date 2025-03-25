@@ -1,5 +1,5 @@
 import React from 'react';
-import { getHebrewMonthNames } from '../utils/dateUtils';
+import { getHebrewMonthNames } from '../../utils/dateUtils';
 
 /**
  * קומפוננטת בחירת חודש
