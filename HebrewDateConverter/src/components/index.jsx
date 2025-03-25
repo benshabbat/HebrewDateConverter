@@ -1,37 +1,36 @@
-// src/components/index.jsx - Improved version with multi-platform support
+// src/components/index.jsx
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import DateInput from './DateInput';
 import HebrewDateDisplay from './HebrewDateDisplay';
 import { 
   formatDate, 
   convertToHebrewDate, 
-  getHebrewDayOfWeek, 
-  getDateNote 
+  getHebrewDayOfWeek 
 } from './hebrewDateUtils';
+import { getHolidayInfo, getHolidayDisplayString } from '../utils/holidayUtils';
 
 /**
- * Enhanced Hebrew Date Converter component with improved multi-platform support
+ * Main Hebrew Date Converter component with enhanced holiday support
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.isMobile - Whether the app is running on a mobile device
+ * @param {boolean} props.isIOS - Whether the app is running on iOS
+ * @returns {JSX.Element} - The main component
  */
-const HebrewDateConverter = () => {
+const HebrewDateConverter = ({ isMobile, isIOS }) => {
   // State management
   const [gregorianDate, setGregorianDate] = useState('');
   const [hebrewDate, setHebrewDate] = useState('');
   const [dayOfWeek, setDayOfWeek] = useState('');
-  const [dateNote, setDateNote] = useState('');
+  const [holidayInfo, setHolidayInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [animateHeader, setAnimateHeader] = useState(false);
   
-  // Refs for timers to prevent memory leaks
+  // Refs for timers
   const loadingTimerRef = useRef(null);
   const headerAnimationTimerRef = useRef(null);
   const conversionDelayTimerRef = useRef(null);
-
-  // Platform detection for adaptive behavior
-  const isMobileDevice = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  }, []);
 
   // Initialize with current date
   useEffect(() => {
@@ -43,23 +42,32 @@ const HebrewDateConverter = () => {
     
     headerAnimationTimerRef.current = setTimeout(() => {
       setAnimateHeader(false);
+      headerAnimationTimerRef.current = null;
     }, 1000);
     
     // Cleanup timers on unmount
     return () => {
-      [headerAnimationTimerRef, loadingTimerRef, conversionDelayTimerRef].forEach(ref => {
-        if (ref.current) {
-          clearTimeout(ref.current);
-          ref.current = null;
-        }
-      });
+      if (headerAnimationTimerRef.current) {
+        clearTimeout(headerAnimationTimerRef.current);
+        headerAnimationTimerRef.current = null;
+      }
+      
+      if (loadingTimerRef.current) {
+        clearTimeout(loadingTimerRef.current);
+        loadingTimerRef.current = null;
+      }
+      
+      if (conversionDelayTimerRef.current) {
+        clearTimeout(conversionDelayTimerRef.current);
+        conversionDelayTimerRef.current = null;
+      }
     };
   }, []);
 
-  // Convert date whenever gregorianDate changes
+  // Convert date when it changes
   useEffect(() => {
     if (gregorianDate) {
-      // Debounce conversion for smoother UX, especially on slower devices
+      // Debounce conversion for smoother UX
       if (conversionDelayTimerRef.current) {
         clearTimeout(conversionDelayTimerRef.current);
       }
@@ -67,9 +75,9 @@ const HebrewDateConverter = () => {
       conversionDelayTimerRef.current = setTimeout(() => {
         convertDate();
         conversionDelayTimerRef.current = null;
-      }, 200); // 200ms debounce
+      }, isMobile ? 200 : 100); // Longer delay on mobile
     }
-  }, [gregorianDate]);
+  }, [gregorianDate, isMobile]);
 
   /**
    * Convert Gregorian date to Hebrew date
@@ -84,7 +92,7 @@ const HebrewDateConverter = () => {
       clearTimeout(loadingTimerRef.current);
     }
     
-    // Add a slight delay for loading indicator to avoid flickering on fast conversions
+    // Add a slight delay for loading indicator
     loadingTimerRef.current = setTimeout(() => {
       try {
         const date = new Date(gregorianDate);
@@ -92,28 +100,32 @@ const HebrewDateConverter = () => {
         if (isNaN(date.getTime())) {
           setError('התאריך שהוזן אינו תקין');
           setLoading(false);
+          loadingTimerRef.current = null;
           return;
         }
 
-        // Convert the date
+        // Convert to Hebrew date
         const hebrewDateResult = convertToHebrewDate(date);
         setHebrewDate(hebrewDateResult);
         
-        // Get day of week and special date note
+        // Get day of week
         setDayOfWeek(getHebrewDayOfWeek(date));
-        const note = getDateNote(date);
-        setDateNote(note);
+        
+        // Check for holidays using the enhanced holiday detection
+        const holiday = getHolidayInfo(date);
+        setHolidayInfo(holiday);
         
         setError('');
+        setLoading(false);
+        loadingTimerRef.current = null;
       } catch (error) {
         console.error('Error converting date:', error);
         setError('אירעה שגיאה בהמרת התאריך');
-      } finally {
         setLoading(false);
         loadingTimerRef.current = null;
       }
-    }, isMobileDevice ? 300 : 200); // Longer delay on mobile for smoother experience
-  }, [gregorianDate, isMobileDevice]);
+    }, isMobile ? 300 : 200);
+  }, [gregorianDate, isMobile]);
 
   /**
    * Handle date change
@@ -136,7 +148,7 @@ const HebrewDateConverter = () => {
     setGregorianDate(newDate);
   }, []);
   
-  // Animation classes for header
+  // Header classes for animation
   const headerClasses = useMemo(() => `flex justify-between items-center mb-6 pb-4 border-b border-indigo-200 transition-all duration-300 ${
     animateHeader ? 'transform -translate-y-1' : ''
   }`, [animateHeader]);
@@ -144,8 +156,8 @@ const HebrewDateConverter = () => {
   // Current year for footer
   const currentYear = useMemo(() => new Date().getFullYear(), []);
   
-  // Dynamic padding based on platform
-  const containerPadding = isMobileDevice ? 'p-4' : 'p-6';
+  // Responsive padding
+  const containerPadding = isMobile ? 'p-4' : 'p-6';
 
   return (
     <div className={`max-w-lg mx-auto ${containerPadding} bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl shadow-xl text-right`} dir="rtl">
@@ -171,11 +183,11 @@ const HebrewDateConverter = () => {
         error={error}
       />
       
-      {/* Hebrew date display */}
+      {/* Hebrew date display - passing the full holiday info object */}
       <HebrewDateDisplay 
         hebrewDate={hebrewDate}
         dayOfWeek={dayOfWeek}
-        note={dateNote}
+        note={holidayInfo}  // Pass the complete holiday info object
         loading={loading}
         gregorianDate={gregorianDate}
       />
